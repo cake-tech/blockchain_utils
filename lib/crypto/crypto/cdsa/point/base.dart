@@ -116,16 +116,9 @@ abstract class AbstractPoint {
   /// Doubles a point
   AbstractPoint doublePoint();
 
-  /// Creates an elliptic curve point from its byte representation.
-  static Tuple<BigInt, BigInt> fromBytes(
-    Curve curve,
-    List<int> data, {
-    bool validateEncoding = true,
-    EncodeType? encodeType,
-  }) {
-    if (curve is CurveED) {
-      return _fromEdwards(curve, data);
-    }
+  EncodeType? encodeType;
+
+  static EncodeType? getEncodeType(Curve curve, List<int> data, {EncodeType? encodeType}) {
     final keyLen = data.length;
     final rawEncodingLength = 2 * BigintUtils.orderLen(curve.p);
     if (encodeType == null) {
@@ -152,8 +145,39 @@ abstract class AbstractPoint {
           }
 
           encodeType = EncodeType.compressed;
-          return Tuple(coords[0], coords[1]);
         }
+      }
+    }
+
+    return encodeType;
+  }
+
+  /// Creates an elliptic curve point from its byte representation.
+  static Tuple<BigInt, BigInt> fromBytes(
+    Curve curve,
+    List<int> data, {
+    bool validateEncoding = true,
+    EncodeType? encodeType,
+  }) {
+    if (curve is CurveED) {
+      return _fromEdwards(curve, data);
+    }
+    final keyLen = data.length;
+    final rawEncodingLength = 2 * BigintUtils.orderLen(curve.p);
+    encodeType = getEncodeType(curve, data, encodeType: encodeType);
+    if (keyLen == rawEncodingLength) {
+    } else if (keyLen == rawEncodingLength + 1) {
+    } else if (keyLen == rawEncodingLength ~/ 2 + 1) {
+    } else {
+      final x = BigintUtils.fromBytes(data);
+
+      if (curve.isXCoord(x)) {
+        var coords = curve.liftX(x);
+        if (coords[1].isOdd) {
+          coords = curve.negate(coords);
+        }
+
+        return Tuple(coords[0], coords[1]);
       }
     }
     curve as CurveFp;
