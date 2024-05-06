@@ -10,6 +10,7 @@ This comprehensive package has been shaped by the influence of several key sourc
 - js [stablelib](https://github.com/StableLib/stablelib)
 - rust [strobe](https://github.com/rozbb/strobe-rs)
 
+
 ## Features
 
 **Encoding and Decoding:**
@@ -129,6 +130,19 @@ This comprehensive package has been shaped by the influence of several key sourc
 24. **Electrum Mnemonic V1 and V2 with Key and Address Management:** Support for both Electrum Mnemonic V1 and V2, including SegWit and Standard transactions.
 
 These features make your package a comprehensive solution for encoding, cryptography, blockchain management, BIP39 mnemonic support, and diverse blockchain address encoding and decoding needs.
+
+25. **Sign and Verification:** Implements classes for signing and verifying transaction digests.
+   - Bitcoin (ECDSA, Schnorr)
+   - BitcoinCash (EDDSA)
+   - Dogecoin (EDDSA)
+   - Litecoin (EDDSA)
+   - Dash (EDDSA)
+   - BSV (EDDSA)
+   - Ethereum (EDDSA)
+   - Tron (EDDSA)
+   - Solana (EDDSA)
+   - XRP (EDDSA, ECDSA)
+   - Solana (EDDSA, EDDSA Khalow)
 
 **Example: Explore Our Toolkit**
 

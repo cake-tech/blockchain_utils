@@ -52,7 +52,7 @@
   OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import 'package:blockchain_utils/bip/address/ada_byron_addr.dart';
+import 'package:blockchain_utils/bip/address/ada/ada_byron_addr.dart';
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_keys.dart';
@@ -77,6 +77,8 @@ class CardanoByronLegacyConst {
 class CardanoByronLegacy {
   final Bip32Base bip32;
 
+  /// CardanoByronLegacy
+
   /// Constructor to create a Cardano Byron Legacy wallet from a seed.
   ///
   /// Initializes the wallet's hierarchical deterministic (HD) structure using the
@@ -86,6 +88,8 @@ class CardanoByronLegacy {
   /// - `seedBytes`: The seed bytes used for wallet initialization.
   CardanoByronLegacy.fromSeed(List<int> seedBytes)
       : bip32 = CardanoByronLegacyBip32.fromSeed(seedBytes);
+
+  CardanoByronLegacy.fromBip32(this.bip32);
 
   /// Computes and returns the HD path key for Cardano Byron Legacy wallet.
   ///
@@ -170,9 +174,10 @@ class CardanoByronLegacy {
   String getAddress(Bip32KeyIndex firstIndex, Bip32KeyIndex secondIndex) {
     final pubKey =
         getPublicKey(firstIndex: firstIndex, secondIndex: secondIndex);
+    final hdPath = _getDerivationPath(firstIndex, secondIndex);
     return AdaByronLegacyAddrEncoder().encodeKey(pubKey.key.compressed, {
       "chain_code": pubKey.chainCode.toBytes(),
-      "hd_path": _getDerivationPath(firstIndex, secondIndex),
+      "hd_path": hdPath,
       "hd_path_key": hdPathKey,
     });
   }

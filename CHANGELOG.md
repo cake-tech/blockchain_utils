@@ -1,3 +1,31 @@
+## 2.1.2
+   - Implements classes for signing and verifying cosmos transaction digests
+
+## 2.1.1
+   - Fix Cbor bigint encoding.
+
+## 2.1.0
+- Implements classes for signing and verifying transaction digests.
+   - Introduces classes for signing and verifying transaction digests, with support for Cardano.
+   - Adds a new class for encoding and decoding ADA addresses, covering enterprise, pointer, base, reward, shelly, and shelly legacy address formats.
+   - Fixes an issue with CBOR decoding of negative integers in web environments.
+
+## 2.0.1
+   - dart format .
+
+## 2.0.0
+- Implements classes for signing and verifying transaction digests.
+   - Bitcoin (ECDSA, Schnorr)
+   - BitcoinCash (ECDSA)
+   - Dogecoin (ECDSA)
+   - Litecoin (ECDSA)
+   - Dash (ECDSA)
+   - BSV (ECDSA)
+   - Ethereum (ECDSA)
+   - Tron (ECDSA)
+   - Solana (EDDSA)
+   - XRP (EDDSA, ECDSA)
+
 ## 1.6.0
 - Addressed an issue with Cbor decoding.
 - Enhanced secret storage definition to encrypt and decrypt bytes instead of strings. This resolves a compatibility issue with Ethereum keystore.

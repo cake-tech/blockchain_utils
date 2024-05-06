@@ -1,4 +1,5 @@
-import 'package:blockchain_utils/bip/address/ada_shelley_addr.dart';
+import 'package:blockchain_utils/bip/address/ada/ada_shelley_addr.dart';
+import 'package:blockchain_utils/bip/address/ada/network.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_const.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coin_conf.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_conf_const.dart';
@@ -19,7 +20,7 @@ class Cip1852Conf {
     addressEncoder: ([dynamic kwargs]) => AdaShelleyAddrEncoder(),
     type: EllipticCurveTypes.ed25519Kholaw,
     addrParams: {
-      "net_tag": AdaShelleyAddrNetworkTags.mainnet,
+      "net_tag": ADANetwork.mainnet,
       "is_icarus": true,
     },
   );
@@ -27,7 +28,7 @@ class Cip1852Conf {
   // Configuration for Cardano test net (Icarus)
   static final CoinConfig cardanoIcarusTestNet = CoinConfig(
     coinNames: CoinsConf.cardanoTestNet.coinName,
-    coinIdx: Slip44.cardano,
+    coinIdx: Slip44.testnet,
     isTestnet: true,
     defPath: derPathNonHardenedFull,
     keyNetVer: Bip32Const.testNetKeyNetVersions,
@@ -35,7 +36,7 @@ class Cip1852Conf {
     addressEncoder: ([dynamic kwargs]) => AdaShelleyAddrEncoder(),
     type: EllipticCurveTypes.ed25519Kholaw,
     addrParams: {
-      "net_tag": AdaShelleyAddrNetworkTags.testnet,
+      "net_tag": ADANetwork.testnetPreview,
       "is_icarus": true,
     },
   );
@@ -50,19 +51,19 @@ class Cip1852Conf {
     wifNetVer: null,
     type: EllipticCurveTypes.ed25519Kholaw,
     addressEncoder: ([dynamic kwargs]) => AdaShelleyAddrEncoder(),
-    addrParams: {"net_tag": AdaShelleyAddrNetworkTags.mainnet},
+    addrParams: {"net_tag": ADANetwork.mainnet},
   );
 
   // Configuration for Cardano test net (Ledger)
   static final CoinConfig cardanoLedgerTestNet = CoinConfig(
     coinNames: CoinsConf.cardanoTestNet.coinName,
-    coinIdx: Slip44.cardano,
+    coinIdx: Slip44.testnet,
     isTestnet: true,
     defPath: derPathNonHardenedFull,
     keyNetVer: Bip32Const.testNetKeyNetVersions,
     wifNetVer: null,
     type: EllipticCurveTypes.ed25519Kholaw,
     addressEncoder: ([dynamic kwargs]) => AdaShelleyAddrEncoder(),
-    addrParams: {"net_tag": AdaShelleyAddrNetworkTags.testnet},
+    addrParams: {"net_tag": ADANetwork.testnetPreview},
   );
 }
