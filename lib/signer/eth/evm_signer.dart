@@ -1,5 +1,9 @@
-import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:blockchain_utils/crypto/crypto/crypto.dart';
+import 'package:blockchain_utils/crypto/quick_crypto.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/signer/ecdsa_signing_key.dart';
+import 'package:blockchain_utils/signer/eth/eth_signature.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 
 /// Constants used by the Ethereum Signer for cryptographic operations.
 ///
@@ -103,7 +107,7 @@ class ETHSigner {
   List<int> signProsonalMessage(List<int> digest, {int? payloadLength}) {
     final prefix = ETHSignerConst.ethPersonalSignPrefix +
         (payloadLength?.toString() ?? digest.length.toString());
-    final prefixBytes = StringUtils.encode(prefix, StringEncoding.ascii);
+    final prefixBytes = StringUtils.encode(prefix, type: StringEncoding.ascii);
     final sign = _signEcdsa(<int>[...prefixBytes, ...digest]);
     return sign.toBytes(true);
   }
@@ -182,7 +186,8 @@ class ETHVerifier {
     if (hashMessage) {
       final prefix = ETHSignerConst.ethPersonalSignPrefix +
           (payloadLength?.toString() ?? message.length.toString());
-      final prefixBytes = StringUtils.encode(prefix, StringEncoding.ascii);
+      final prefixBytes =
+          StringUtils.encode(prefix, type: StringEncoding.ascii);
       return QuickCrypto.keccack256Hash(<int>[...prefixBytes, ...message]);
     }
     return message;

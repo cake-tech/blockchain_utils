@@ -1,7 +1,6 @@
 import 'dart:typed_data';
+import 'package:blockchain_utils/utils/utils.dart';
 
-import 'package:blockchain_utils/tuple/tuple.dart';
-import 'package:blockchain_utils/numbers/bigint_utils.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/utils/ed25519_utils.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/curve/curves.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/ristretto_point.dart';
@@ -11,98 +10,7 @@ import 'package:blockchain_utils/crypto/crypto/cdsa/utils/ristretto_utils.dart'
     as ristretto_tools;
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/merlin/transcript.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
-import 'package:blockchain_utils/compare/compare.dart';
 import 'package:blockchain_utils/exception/exception.dart';
-
-/// The `ExpansionMode` enum defines different expansion modes used in Schnorr signatures (Schnorrkel).
-///
-/// Schnorr signatures are a cryptographic signature scheme, and the choice of expansion mode can impact key generation and signing.
-///
-/// - `uniform`: A mode for generating keys and signatures with uniform randomness.
-/// - `ed25519`: A mode that follows the Ed25519 specification for key generation and signing.
-enum ExpansionMode {
-  uniform,
-  ed25519,
-}
-
-/// The `VRFInOut` class represents the input and output data of a Verifiable Random Function (VRF) computation.
-///
-/// VRF is a cryptographic construction used to generate a verifiable proof of a random value.
-///
-/// Members:
-/// - `_input`: A `List<int>` containing the input data for the VRF computation.
-/// - `_output`: A `List<int>` containing the output data of the VRF computation.
-///
-/// This class provides methods and properties to access and manipulate the input and output data.
-class VRFInOut {
-  /// Private constructor to create a `VRFInOut` instance with input and output data.
-  VRFInOut._(this._input, this._output);
-  final List<int> _input;
-  final List<int> _output;
-
-  /// Gets a copy of the input data as a `List<int>`.
-  List<int> get input => List<int>.from(_input);
-
-  /// Gets a copy of the output data as a `List<int>`.
-  List<int> get output => List<int>.from(_output);
-
-  /// Converts the output data into a RistrettoPoint point.
-  RistrettoPoint get outputPoint => RistrettoPoint.fromBytes(output);
-
-  /// Converts the input data into a RistrettoPoint point.
-  RistrettoPoint get inputPoint => RistrettoPoint.fromBytes(input);
-
-  /// Converts the `VRFInOut` instance into a `List<int>` by concatenating the input and output data.
-  List<int> toBytes() {
-    return List<int>.from([..._input, ..._output]);
-  }
-}
-
-/// The `VRFProof` class represents a Verifiable Random Function (VRF) proof, consisting of two components 'c' and 's'.
-///
-/// VRF is a cryptographic construction used to generate a verifiable proof of a random value.
-///
-/// Members:
-/// - `_c`: A `List<int>` containing the 'c' component of the VRF proof.
-/// - `_s`: A `List<int>` containing the 's' component of the VRF proof.
-///
-/// This class provides methods and properties to access and manipulate the components of the VRF proof.
-class VRFProof {
-  /// Private constructor to create a `VRFProof` instance with 'c' and 's' components.
-  VRFProof._(this._c, this._s);
-
-  /// Creates a `VRFProof` instance from a byte representation.
-  /// The input bytes are expected to be properly formatted for a VRF proof.
-  factory VRFProof.fromBytes(List<int> bytes) {
-    _KeyUtils._checkKeysBytes(
-        bytes, SchnorrkelKeyCost.vrfProofLength, "VRF proof");
-    final c = bytes.sublist(0, 32);
-    final s = bytes.sublist(32);
-    if (!_KeyUtils.isCanonical(c) || !_KeyUtils.isCanonical(s)) {
-      throw ArgumentException("invalid VRF proof bytes");
-    }
-    return VRFProof._(c, s);
-  }
-  final List<int> _c;
-  final List<int> _s;
-
-  /// Gets a copy of the 'c' component as a `List<int>`.
-  List<int> get c => List<int>.from(_c);
-
-  /// Gets a copy of the 's' component as a `List<int>`.
-  List<int> get s => List<int>.from(_s);
-
-  /// Converts the 'c' component into a `BigInt`.
-  BigInt get cBigint => BigintUtils.fromBytes(c, byteOrder: Endian.little);
-
-  /// Converts the 's' component into a `BigInt`.
-  BigInt get sBigint => BigintUtils.fromBytes(s, byteOrder: Endian.little);
-
-  /// Converts the `VRFProof` instance into a `List<int>` by concatenating the 'c' and 's' components.
-  List<int> toBytes() {
-    return List<int>.from([..._c, ..._s]);
-  }
-}
 
 /// The `SchnorrkelKeyCost` class defines various constants related to the sizes and lengths of Schnorrkel keys and components.
 ///
@@ -128,6 +36,8 @@ class SchnorrkelKeyCost {
 
   /// Length of a Schnorrkel signature in bytes.
   static const int signatureLength = 64;
+
+  static const int vrfPreOutLength = 32;
 }
 
 /// A collection of static utility methods for performing cryptographic operations.
@@ -191,14 +101,124 @@ class _KeyUtils {
   ///
   /// This method checks if the highest bit of the last byte is unset (bitwise AND with 127) and if the byte array
   /// is equal to the result of scalar reduction. If both conditions are met, the value is considered canonical.
-  static bool isCanonical(List<int> bytes) {
-    bytes[31] &= 127;
+  static List<int>? toCanonical(List<int> bytes) {
+    final cloneBytes = List<int>.from(bytes);
+    cloneBytes[31] &= 127;
     bool highBitUnset = (bytes[31] >> 7 & 0) == 0;
-    bool isCanonical = bytesEqual(bytes, Ed25519Utils.scalarReduce(bytes));
+    bool isCanonical = BytesUtils.bytesEqual(
+        cloneBytes, Ed25519Utils.scalarReduce(cloneBytes));
     if (highBitUnset && isCanonical) {
-      return true;
+      return cloneBytes;
     }
-    return false;
+    return null;
+  }
+}
+
+/// The `ExpansionMode` enum defines different expansion modes used in Schnorr signatures (Schnorrkel).
+///
+/// Schnorr signatures are a cryptographic signature scheme, and the choice of expansion mode can impact key generation and signing.
+///
+/// - `uniform`: A mode for generating keys and signatures with uniform randomness.
+/// - `ed25519`: A mode that follows the Ed25519 specification for key generation and signing.
+enum ExpansionMode {
+  uniform,
+  ed25519,
+}
+
+class VRFPreOut {
+  VRFPreOut._({required List<int> output})
+      : _output = BytesUtils.toBytes(output, unmodifiable: true);
+  factory VRFPreOut(List<int> bytes) {
+    if (bytes.length != SchnorrkelKeyCost.vrfPreOutLength) {
+      throw ArgumentException(
+          "Invalid VRFPreOut bytes length. excepted: ${SchnorrkelKeyCost.vrfPreOutLength} got: ${bytes.length}");
+    }
+    return VRFPreOut._(output: bytes);
+  }
+  final List<int> _output;
+  List<int> toBytes() {
+    return List<int>.from(_output);
+  }
+}
+
+/// The `VRFInOut` class represents the input and output data of a Verifiable Random Function (VRF) computation.
+///
+/// VRF is a cryptographic construction used to generate a verifiable proof of a random value.
+///
+/// Members:
+/// - `_input`: A `List<int>` containing the input data for the VRF computation.
+/// - `_output`: A `List<int>` containing the output data of the VRF computation.
+///
+/// This class provides methods and properties to access and manipulate the input and output data.
+class VRFInOut {
+  /// Private constructor to create a `VRFInOut` instance with input and output data.
+  VRFInOut._(this._input, this._output);
+  final List<int> _input;
+  final List<int> _output;
+
+  /// Gets a copy of the input data as a `List<int>`.
+  List<int> get input => List<int>.from(_input);
+
+  /// Gets a copy of the output data as a `List<int>`.
+  List<int> get output => List<int>.from(_output);
+
+  /// Converts the output data into a RistrettoPoint point.
+  RistrettoPoint get outputPoint => RistrettoPoint.fromBytes(output);
+
+  /// Converts the input data into a RistrettoPoint point.
+  RistrettoPoint get inputPoint => RistrettoPoint.fromBytes(input);
+
+  /// Converts the `VRFInOut` instance into a `List<int>` by concatenating the input and output data.
+  List<int> toBytes() {
+    return List<int>.from([..._input, ..._output]);
+  }
+
+  VRFPreOut toVRFPreOut() => VRFPreOut(output);
+}
+
+/// The `VRFProof` class represents a Verifiable Random Function (VRF) proof, consisting of two components 'c' and 's'.
+///
+/// VRF is a cryptographic construction used to generate a verifiable proof of a random value.
+///
+/// Members:
+/// - `_c`: A `List<int>` containing the 'c' component of the VRF proof.
+/// - `_s`: A `List<int>` containing the 's' component of the VRF proof.
+///
+/// This class provides methods and properties to access and manipulate the components of the VRF proof.
+class VRFProof {
+  /// Private constructor to create a `VRFProof` instance with 'c' and 's' components.
+  VRFProof._(this._c, this._s);
+
+  /// Creates a `VRFProof` instance from a byte representation.
+  /// The input bytes are expected to be properly formatted for a VRF proof.
+  factory VRFProof.fromBytes(List<int> bytes) {
+    _KeyUtils._checkKeysBytes(
+        bytes, SchnorrkelKeyCost.vrfProofLength, "VRF proof");
+    final c = _KeyUtils.toCanonical(bytes.sublist(0, 32));
+    final s = _KeyUtils.toCanonical(bytes.sublist(32));
+    if (c == null || s == null) {
+      throw const ArgumentException("invalid VRF proof bytes");
+    }
+    return VRFProof._(c, s);
+  }
+  final List<int> _c;
+  final List<int> _s;
+
+  /// Gets a copy of the 'c' component as a `List<int>`.
+  List<int> get c => List<int>.from(_c);
+
+  /// Gets a copy of the 's' component as a `List<int>`.
+  List<int> get s => List<int>.from(_s);
+
+  /// Converts the 'c' component into a `BigInt`.
+  BigInt get cBigint => BigintUtils.fromBytes(c, byteOrder: Endian.little);
+
+  /// Converts the 's' component into a `BigInt`.
+  BigInt get sBigint => BigintUtils.fromBytes(s, byteOrder: Endian.little);
+
+  /// Converts the `VRFProof` instance into a `List<int>` by concatenating the 'c' and 's' components.
+  List<int> toBytes() {
+    return List<int>.from([..._c, ..._s]);
   }
 }
 
@@ -229,9 +249,10 @@ class SchnorrkelMiniSecretKey {
   /// Returns:
   /// A `SchnorrkelMiniSecretKey` instance.
   factory SchnorrkelMiniSecretKey.fromBytes(List<int> keyBytes) {
+    final bytes = BytesUtils.toBytes(keyBytes, unmodifiable: true);
     _KeyUtils._checkKeysBytes(
         keyBytes, SchnorrkelKeyCost.miniSecretLength, "mini secret key");
-    return SchnorrkelMiniSecretKey._(keyBytes);
+    return SchnorrkelMiniSecretKey._(bytes);
   }
 
   /// The `_expandEd25519` method expands the mini-secret key into a Schnorrkel secret key
@@ -243,7 +264,7 @@ class SchnorrkelMiniSecretKey {
   /// Returns:
   /// A `SchnorrkelSecretKey` instance derived from the mini-secret key expansion.
   SchnorrkelSecretKey _expandEd25519() {
-    final toHash = SHA512.hash(_bytes);
+    final toHash = SHA512.hash(toBytes());
     final key = toHash.sublist(0, 32);
     key[0] &= 248;
     key[31] &= 63;
@@ -327,10 +348,13 @@ class SchnorrkelSecretKey {
     _KeyUtils._checkKeysBytes(
         key, SchnorrkelKeyCost.miniSecretLength, "mini secret key");
     _KeyUtils._checkKeysBytes(nonce, SchnorrkelKeyCost.nonceLength, "nonce");
-    if (_KeyUtils.isCanonical(key)) {
-      return SchnorrkelSecretKey._(key, nonce);
+    final canonicalKey = _KeyUtils.toCanonical(key);
+    if (canonicalKey != null) {
+      return SchnorrkelSecretKey._(
+          BytesUtils.toBytes(canonicalKey, unmodifiable: true),
+          BytesUtils.toBytes(nonce, unmodifiable: true));
     }
-    throw ArgumentException("invalid key");
+    throw const ArgumentException("invalid key");
   }
 
   /// Creates a `SchnorrkelSecretKey` instance from a byte representation of a secret key.
@@ -346,11 +370,12 @@ class SchnorrkelSecretKey {
   factory SchnorrkelSecretKey.fromBytes(List<int> secretKeyBytes) {
     _KeyUtils._checkKeysBytes(
         secretKeyBytes, SchnorrkelKeyCost.secretKeyLength, "secret key");
-
-    return SchnorrkelSecretKey(
-        secretKeyBytes.sublist(0, SchnorrkelKeyCost.miniSecretLength),
-        secretKeyBytes.sublist(SchnorrkelKeyCost.miniSecretLength,
-            SchnorrkelKeyCost.secretKeyLength));
+    final keyBytes =
+        secretKeyBytes.sublist(0, SchnorrkelKeyCost.miniSecretLength);
+    final nonceBytes = secretKeyBytes.sublist(
+        SchnorrkelKeyCost.miniSecretLength, SchnorrkelKeyCost.secretKeyLength);
+    return SchnorrkelSecretKey(BytesUtils.toBytes(keyBytes, unmodifiable: true),
+        BytesUtils.toBytes(nonceBytes, unmodifiable: true));
   }
 
   /// Creates a `SchnorrkelSecretKey` instance from a byte representation of an Ed25519 secret key.
@@ -370,9 +395,11 @@ class SchnorrkelSecretKey {
         secretKeyBytes.sublist(0, SchnorrkelKeyCost.miniSecretLength));
     _KeyUtils.divideScalarByCofactor(newKey);
     return SchnorrkelSecretKey(
-        newKey,
-        secretKeyBytes.sublist(SchnorrkelKeyCost.miniSecretLength,
-            SchnorrkelKeyCost.secretKeyLength));
+        BytesUtils.toBytes(newKey, unmodifiable: true),
+        BytesUtils.toBytes(
+            secretKeyBytes.sublist(SchnorrkelKeyCost.miniSecretLength,
+                SchnorrkelKeyCost.secretKeyLength),
+            unmodifiable: true));
   }
   final List<int> _key;
   final List<int> _nonce;
@@ -503,7 +530,7 @@ class SchnorrkelSecretKey {
     final derivePub = publicKey()._deriveScalarAndChainCode(chainCode, message);
     final nonce = nonceGenerator?.call(32) ?? QuickCrypto.generateRandom(32);
     if (nonce.length != 32) {
-      throw ArgumentException("invalid random bytes length");
+      throw const ArgumentException("invalid random bytes length");
     }
     final newKey = ristretto_tools.add(key(), derivePub.item1);
     final combine = List<int>.from([...newKey, ...nonce]);
@@ -541,7 +568,7 @@ class SchnorrkelSecretKey {
     final nonceRand =
         nonceGenerator?.call(64) ?? QuickCrypto.generateRandom(64);
     if (nonceRand.length != 64) {
-      throw ArgumentException("invalid random bytes length");
+      throw const ArgumentException("invalid random bytes length");
     }
     final nonceBytes = Ed25519Utils.scalarReduce(nonceRand);
     final nonceBigint =
@@ -578,13 +605,19 @@ class SchnorrkelSecretKey {
   /// The `vrfSign` method generates a VRF output and its proof for a given transcript using the secret key and context-specific information.
   /// It returns a tuple with the VRF output and its proof.
   Tuple<VRFInOut, VRFProof> vrfSign(MerlinTranscript script,
-      {GenerateRandom? nonceGenerator, bool kusamaVRF = true}) {
+      {GenerateRandom? nonceGenerator,
+      bool kusamaVRF = true,
+      MerlinTranscript? verifyScript}) {
     final publicHashPoint = publicKey().vrfHash(script);
     final keyBig = BigintUtils.fromBytes(key(), byteOrder: Endian.little);
     final mul = publicHashPoint * keyBig;
     final vrf = VRFInOut._(publicHashPoint.toBytes(), mul.toBytes());
-    return Tuple(vrf,
-        dleqProve(vrf, nonceGenerator: nonceGenerator, kusamaVRF: kusamaVRF));
+    return Tuple(
+        vrf,
+        dleqProve(vrf,
+            nonceGenerator: nonceGenerator,
+            kusamaVRF: kusamaVRF,
+            verifyScript: verifyScript));
   }
 
   /// Generates a Discrete Logarithm Equality Proof (DLEQ) for a Verifiable Random Function (VRF) output.
@@ -611,8 +644,10 @@ class SchnorrkelSecretKey {
   /// The `dleqProve` method generates a DLEQ proof for a VRF output, ensuring the equality of discrete logarithms between
   /// specific points in the VRF computation. It returns a `VRFProof` instance.
   VRFProof dleqProve(VRFInOut out,
-      {bool kusamaVRF = true, GenerateRandom? nonceGenerator}) {
-    final script = MerlinTranscript("VRF");
+      {bool kusamaVRF = true,
+      GenerateRandom? nonceGenerator,
+      MerlinTranscript? verifyScript}) {
+    final script = verifyScript ?? MerlinTranscript("VRF");
     script.additionalData("proto-name".codeUnits, "DLEQProof".codeUnits);
     script.additionalData("vrf:h".codeUnits, out.input);
     if (!kusamaVRF) {
@@ -620,7 +655,7 @@ class SchnorrkelSecretKey {
     }
     final nonce = nonceGenerator?.call(64) ?? QuickCrypto.generateRandom(64);
     if (nonce.length != 64) {
-      throw ArgumentException("invalid random bytes length");
+      throw const ArgumentException("invalid random bytes length");
     }
     final n = Ed25519Utils.scalarReduce(nonce);
     final scalar = BigintUtils.fromBytes(n, byteOrder: Endian.little);
@@ -671,7 +706,8 @@ class SchnorrkelPublicKey {
     _KeyUtils._checkKeysBytes(
         keyBytes, SchnorrkelKeyCost.publickeyLength, "public key");
     RistrettoPoint.fromBytes(keyBytes);
-    return SchnorrkelPublicKey._(keyBytes);
+    return SchnorrkelPublicKey._(
+        BytesUtils.toBytes(keyBytes, unmodifiable: true));
   }
   final List<int> _publicKey;
 
@@ -802,7 +838,7 @@ class SchnorrkelPublicKey {
     final kBigint = signingContextScript.toBigint("sign:c".codeUnits, 64);
     final r = ((-toPoint()) * kBigint) +
         (Curves.generatorED25519 * signature.sBigint);
-    return bytesEqual(r.toBytes(), signature.r);
+    return BytesUtils.bytesEqual(r.toBytes(), signature.r);
   }
 
   /// Verifies a Verifiable Random Function (VRF) output and its proof.
@@ -828,10 +864,11 @@ class SchnorrkelPublicKey {
   /// The `vrfVerify` method is used to verify the validity of a Verifiable Random Function (VRF) output and its proof
   /// by comparing it to a transcript and the provided proof. It returns `true` if the output and proof are valid,
   /// and `false` otherwise.
-  bool vrfVerify(MerlinTranscript script, List<int> output, VRFProof proof) {
+  bool vrfVerify(MerlinTranscript script, VRFPreOut output, VRFProof proof,
+      {MerlinTranscript? verifyScript}) {
     final publicPointHash = vrfHash(script);
-    final vrf = VRFInOut._(publicPointHash.toBytes(), output);
-    final vrifyScript = MerlinTranscript("VRF");
+    final vrf = VRFInOut._(publicPointHash.toBytes(), output.toBytes());
+    final vrifyScript = verifyScript ?? MerlinTranscript("VRF");
     return dleqVerify(vrifyScript, vrf, proof);
   }
 
@@ -877,7 +914,7 @@ class SchnorrkelPublicKey {
     }
     script.additionalData("vrf:h^sk".codeUnits, out.output);
     final c = script.toBytesWithReduceScalar("prove".codeUnits, 64);
-    return bytesEqual(c, proof.c);
+    return BytesUtils.bytesEqual(c, proof.c);
   }
 
   /// Computes a VRF (Verifiable Random Function) hash using a transcript.
@@ -901,6 +938,13 @@ class SchnorrkelPublicKey {
   /// and extracting the resulting hash as a RistrettoPoint point.
   RistrettoPoint vrfHash(MerlinTranscript script) {
     script.additionalData("vrf-nm-pk".codeUnits, toBytes());
+    final hashPoint =
+        RistrettoPoint.fromUniform(script.toBytes("VRFHash".codeUnits, 64));
+    return hashPoint;
+  }
+
+  static RistrettoPoint vrfHash2(MerlinTranscript script, List<int> keyBytes) {
+    script.additionalData("vrf-nm-pk".codeUnits, keyBytes);
     final hashPoint =
         RistrettoPoint.fromUniform(script.toBytes("VRFHash".codeUnits, 64));
     return hashPoint;
@@ -938,7 +982,8 @@ class SchnorrkelKeypair {
         bytes.sublist(0, SchnorrkelKeyCost.secretKeyLength));
     final public = SchnorrkelPublicKey(bytes.sublist(
         SchnorrkelKeyCost.secretKeyLength, SchnorrkelKeyCost.keypairLength));
-    return SchnorrkelKeypair._(secret.toBytes(), public.toBytes());
+    return SchnorrkelKeypair._(List<int>.unmodifiable(secret.toBytes()),
+        List<int>.unmodifiable(public.toBytes()));
   }
 
   /// Creates a key pair from Ed25519 key bytes.
@@ -986,14 +1031,16 @@ class SchnorrkelSignature {
     final r = signatureBytes.sublist(0, 32);
     final s = signatureBytes.sublist(32, SchnorrkelKeyCost.signatureLength);
     if (s[31] & 128 == 0) {
-      throw ArgumentException(
+      throw const ArgumentException(
           "Signature not marked as schnorrkel, maybe try ed25519 instead.");
     }
-
-    if (_KeyUtils.isCanonical(s)) {
-      return SchnorrkelSignature._(s, r);
+    final canonicalS = _KeyUtils.toCanonical(s);
+    if (canonicalS != null) {
+      return SchnorrkelSignature._(
+          BytesUtils.toBytes(canonicalS, unmodifiable: true),
+          BytesUtils.toBytes(r, unmodifiable: true));
     }
-    throw ArgumentException("invalid signature");
+    throw const ArgumentException("invalid schnorrkel signature");
   }
 
   /// private constructor

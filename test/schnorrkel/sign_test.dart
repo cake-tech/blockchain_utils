@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/keys/keys.dart';
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/merlin/transcript.dart';
-import 'package:blockchain_utils/binary/utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:test/test.dart';
 
 import '../quick_hex.dart';
@@ -18,6 +18,7 @@ void main() {
       final signingScript = MerlinTranscript("SigningContext");
       signingScript.additionalData("".codeUnits, "substrate".codeUnits);
       signingScript.additionalData("sign-bytes".codeUnits, message);
+      final clone = signingScript.clone();
       final sign = secretKey.sign(
         signingScript,
 
@@ -32,10 +33,7 @@ void main() {
         },
       );
       expect(sign.toBytes().toHex(), i["signature"]);
-      final verifyingScript = MerlinTranscript("SigningContext");
-      verifyingScript.additionalData("".codeUnits, "substrate".codeUnits);
-      verifyingScript.additionalData("sign-bytes".codeUnits, message);
-      expect(pubkey.verify(sign, verifyingScript), true);
+      expect(pubkey.verify(sign, clone), true);
     }
   });
 }

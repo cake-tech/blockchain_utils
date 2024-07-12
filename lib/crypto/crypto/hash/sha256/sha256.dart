@@ -6,7 +6,7 @@ part of 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
 /// value from an input message. It's commonly used in various security applications.
 /// This class implements the SHA-256 algorithm and provides a standard interface
 /// for hashing data and producing digests.
-class SHA256 implements SerializableHash {
+class SHA256 implements SerializableHash<SHA256State> {
   static const int digestLength = 32;
   static const int blockSize = 64;
   SHA256() {
@@ -55,7 +55,8 @@ class SHA256 implements SerializableHash {
   @override
   SerializableHash update(List<int> data, {int? length}) {
     if (_finished) {
-      throw MessageException("SHA256: can't update because hash was finished.");
+      throw const MessageException(
+          "SHA256: can't update because hash was finished.");
     }
     int dataLength = length ?? data.length;
     int dataPos = 0;
@@ -173,8 +174,7 @@ class SHA256 implements SerializableHash {
   ///
   /// Returns the current instance of the hash algorithm with the restored state.
   @override
-  SerializableHash restoreState(HashState savedState) {
-    savedState as SHA256State;
+  SerializableHash restoreState(SHA256State savedState) {
     _state.setAll(0, savedState.state);
     _bufferLength = savedState.bufferLength;
     if (savedState.buffer != null) {
@@ -195,7 +195,7 @@ class SHA256 implements SerializableHash {
   @override
   SHA256State saveState() {
     if (_finished) {
-      throw MessageException("SHA256: cannot save finished state");
+      throw const MessageException("SHA256: cannot save finished state");
     }
     return SHA256State(
       state: List<int>.from(_state, growable: false),
@@ -212,8 +212,7 @@ class SHA256 implements SerializableHash {
   ///
   /// [savedState]: The hash state to be cleaned and reset.
   @override
-  void cleanSavedState(HashState savedState) {
-    savedState as SHA256State;
+  void cleanSavedState(SHA256State savedState) {
     zero(savedState.state);
     if (savedState.buffer != null) {
       zero(savedState.buffer!);

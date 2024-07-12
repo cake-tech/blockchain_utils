@@ -120,7 +120,7 @@ final List<List<int>> _sigma = [
 /// - [_mtmp]: Temporary storage for message data.
 /// - [_paddedKey]: Padded key for hash initialization.
 /// - [_initialState]: The initial state of the BLAKE2b hash.
-class BLAKE2b implements SerializableHash {
+class BLAKE2b implements SerializableHash<Blake2bState> {
   final List<int> _state = List<int>.from(_iv, growable: false);
   final List<int> _buffer = List<int>.filled(_blockSize, 0);
   int _bufferLength = 0;
@@ -164,7 +164,7 @@ class BLAKE2b implements SerializableHash {
   /// - An exception if the provided `digestLength` is out of the valid range.
   BLAKE2b({int digestLength = 64, Blake2bConfig? config}) {
     if (digestLength < 1 || digestLength > _digestLength) {
-      throw ArgumentException("blake2b: wrong digest length");
+      throw const ArgumentException("blake2b: wrong digest length");
     }
     getDigestLength = digestLength;
 
@@ -251,28 +251,29 @@ class BLAKE2b implements SerializableHash {
 
   void _validateConfig(Blake2bConfig config) {
     if (config.key != null && config.key!.length > _keyLength) {
-      throw ArgumentException("blake2b: wrong key length");
+      throw const ArgumentException("blake2b: wrong key length");
     }
     if (config.salt != null && config.salt!.length != _saltLength) {
-      throw ArgumentException("blake2b: wrong salt length");
+      throw const ArgumentException("blake2b: wrong salt length");
     }
     if (config.personalization != null &&
         config.personalization!.length != _personalizationLength) {
-      throw ArgumentException("blake2b: wrong personalization length");
+      throw const ArgumentException("blake2b: wrong personalization length");
     }
     if (config.tree != null) {
       if (config.tree!.fanout < 0 || config.tree!.fanout > _maxFanout) {
-        throw ArgumentException("blake2b: wrong tree fanout");
+        throw const ArgumentException("blake2b: wrong tree fanout");
       }
       if (config.tree!.maxDepth < 0 || config.tree!.maxDepth > _maxMaxDepth) {
-        throw ArgumentException("blake2b: wrong tree depth");
+        throw const ArgumentException("blake2b: wrong tree depth");
       }
       if (config.tree!.leafSize < 0 || config.tree!.leafSize > _maxLeafSize) {
-        throw ArgumentException("blake2b: wrong leaf size");
+        throw const ArgumentException("blake2b: wrong leaf size");
       }
       if (config.tree!.innerDigestLength < 0 ||
           config.tree!.innerDigestLength > _digestLength) {
-        throw ArgumentException("blake2b: wrong tree inner digest length");
+        throw const ArgumentException(
+            "blake2b: wrong tree inner digest length");
       }
     }
   }
@@ -293,7 +294,7 @@ class BLAKE2b implements SerializableHash {
   @override
   BLAKE2b update(List<int> data, {int? length}) {
     if (_finished) {
-      throw ArgumentException(
+      throw const ArgumentException(
           "blake2b: can't update because hash was finished.");
     }
 
@@ -666,8 +667,7 @@ class BLAKE2b implements SerializableHash {
   /// Returns:
   /// The BLAKE2b instance with the state restored to that of the saved state.
   @override
-  BLAKE2b restoreState(HashState savedState) {
-    savedState as Blake2bState;
+  BLAKE2b restoreState(Blake2bState savedState) {
     _state.setAll(0, savedState.state);
     _buffer.setAll(0, savedState.buffer);
     _bufferLength = savedState.bufferLength;
@@ -703,7 +703,7 @@ class BLAKE2b implements SerializableHash {
   @override
   Blake2bState saveState() {
     if (_finished) {
-      throw MessageException("blake2b: cannot save finished state");
+      throw const MessageException("blake2b: cannot save finished state");
     }
 
     return Blake2bState(

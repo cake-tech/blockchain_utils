@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/keys/keys.dart';
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/merlin/transcript.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
-import 'package:blockchain_utils/binary/utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:test/test.dart';
 import '../quick_hex.dart';
 import 'vrf_test_vector.dart' as vrf_test;
@@ -26,7 +26,7 @@ void main() {
       expect(
           secret
               .publicKey()
-              .vrfVerify(verifyScript, vrfout.item1.output, vrproof),
+              .vrfVerify(verifyScript, vrfout.item1.toVRFPreOut(), vrproof),
           true);
     }
   });
@@ -54,7 +54,7 @@ void main() {
       final keyPair =
           SchnorrkelKeypair.fromBytes(BytesUtils.fromHexString(i["keypair"]));
       final public = keyPair.secretKey().publicKey();
-      final output = BytesUtils.fromHexString(i["out"]);
+      final output = VRFPreOut(BytesUtils.fromHexString(i["out"]));
       final proof = VRFProof.fromBytes(BytesUtils.fromHexString(i["proof"]));
       final script = MerlinTranscript("SigningContext");
       script.additionalData("".codeUnits, "yo!".codeUnits);

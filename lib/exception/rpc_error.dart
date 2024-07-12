@@ -12,7 +12,8 @@ class RPCError implements BlockchainUtilsException {
       {required this.message,
       required this.errorCode,
       required this.data,
-      required this.request});
+      required this.request,
+      this.details});
 
   /// The error code associated with the RPC error.
   final int errorCode;
@@ -27,11 +28,14 @@ class RPCError implements BlockchainUtilsException {
   /// Details of the RPC request that resulted in the error.
   final Map<String, dynamic> request;
 
+  @override
+  final Map<String, dynamic>? details;
+
   /// Returns a string representation of the RPCError.
   ///
   /// The string includes the error code, error message, and the request details if available.
   @override
   String toString() {
-    return 'RPCError: got code $errorCode with msg "$message".';
+    return 'RPCError: got code $errorCode with msg "$message". ${data ?? ''}';
   }
 }

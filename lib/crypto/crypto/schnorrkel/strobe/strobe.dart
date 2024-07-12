@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/binary/binary_operation.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
 import 'package:blockchain_utils/exception/exception.dart';
 
@@ -94,13 +94,16 @@ class Strobe {
     bool initialized = false,
     List<int> buffer = const [],
     List<int> storage = const [],
-    List<int> temp = const [],
+    List<int>? state,
   })  : _initialized = initialized,
         _st = storage,
         _buffer = buffer,
         _curFlags = curFlags,
         _posBegin = posBegin,
-        _io = io;
+        _io = io,
+        _state = state == null
+            ? List<int>.filled(200, 0)
+            : List.from(state, growable: false);
 
   final int rate;
   final int strober;
@@ -111,9 +114,22 @@ class Strobe {
 
   int _curFlags;
   // state
-  final List<int> _state = List<int>.filled(200, 0);
+  final List<int> _state;
   List<int> _buffer;
   final List<int> _st;
+
+  Strobe clone() {
+    return Strobe._(
+        rate: rate,
+        strober: strober,
+        io: _io,
+        posBegin: _posBegin,
+        buffer: List.from(_buffer),
+        curFlags: _curFlags,
+        initialized: _initialized,
+        storage: List.from(_st),
+        state: List.from(_state));
+  }
 
   /// Create a new instance of the Strobe protocol with the specified parameters.
   ///
@@ -144,7 +160,6 @@ class Strobe {
       posBegin: 0,
       curFlags: 0,
       storage: List<int>.filled(rate, 0),
-      temp: List<int>.filled(rate, 0),
       buffer: List.empty(growable: true),
     );
     List<int> domain = [1, rate, 1, 0, 1, 12 * 8];
@@ -163,7 +178,7 @@ class Strobe {
   void _run() {
     if (_initialized) {
       if (_buffer.length > strober) {
-        throw MessageException(
+        throw const MessageException(
             "strobe: buffer is never supposed to reach strobeR");
       }
       _buffer.add(_posBegin);
@@ -268,19 +283,20 @@ class Strobe {
             (StrobeFlags.I | StrobeFlags.T)) &&
         ((flags & (StrobeFlags.I | StrobeFlags.A)) != StrobeFlags.A)) {
       if (length == 0) {
-        throw MessageException("A length should be set for this operation.");
+        throw const MessageException(
+            "A length should be set for this operation.");
       }
       data = List<int>.filled(length, 0);
     } else {
       if (length != 0) {
-        throw MessageException(
+        throw const MessageException(
             "Output length must be zero except for PRF, send_MAC, and RATCHET operations.");
       }
       data = List<int>.from(dataConst);
     }
     if (more) {
       if (flags != _curFlags) {
-        throw MessageException(
+        throw const MessageException(
             "Flag should be the same when streaming operations.");
       }
     } else {
@@ -303,7 +319,7 @@ class Strobe {
     } else if ((flags & (StrobeFlags.I | StrobeFlags.A | StrobeFlags.T)) ==
         (StrobeFlags.I | StrobeFlags.T)) {
       if (more) {
-        throw MessageException(
+        throw const MessageException(
             "Not supposed to check a MAC with the 'more' streaming option");
       }
       int failures = 0;

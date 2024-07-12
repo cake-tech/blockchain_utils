@@ -20,7 +20,7 @@ class _Keccack {
   late final int blockSize;
   _Keccack([int capacity = 32]) {
     if (capacity <= 0 || capacity > 128) {
-      throw ArgumentException("SHA3: incorrect capacity");
+      throw const ArgumentException("SHA3: incorrect capacity");
     }
 
     blockSize = 200 - capacity;
@@ -54,7 +54,8 @@ class _Keccack {
   /// Returns this [Hash] object for method chaining.
   _Keccack update(List<int> data) {
     if (_finished) {
-      throw MessageException("SHA3: can't update because hash was finished");
+      throw const MessageException(
+          "SHA3: can't update because hash was finished");
     }
 
     for (var i = 0; i < data.length; i++) {
@@ -88,7 +89,7 @@ class _Keccack {
 
   void _squeeze(List<int> dst) {
     if (!_finished) {
-      throw MessageException("SHA3: squeezing before padAndPermute");
+      throw const MessageException("SHA3: squeezing before padAndPermute");
     }
 
     for (var i = 0; i < dst.length; i++) {
@@ -191,7 +192,7 @@ class Keccack extends _Keccack {
   /// Returns a [HashState] object containing the saved state information.
   List<int> saveState() {
     if (_finished) {
-      throw MessageException("SHA3: cannot save finished state");
+      throw const MessageException("SHA3: cannot save finished state");
     }
     return List<int>.from(_state.sublist(0, _pos));
   }
@@ -201,7 +202,7 @@ class Keccack extends _Keccack {
   /// This method allows you to restore the hash computation state to a previously saved state.
   /// It is useful when you want to continue hashing data from a certain point, or if you want
   /// to combine multiple hash computations.
-  Keccack restoreState(dynamic savedState) {
+  Keccack restoreState(List<int> savedState) {
     _state.setAll(0, savedState);
     _pos = savedState.length;
     _finished = false;
@@ -229,7 +230,7 @@ class Keccack extends _Keccack {
 
 /// The `SHA3` class is used to compute hash digests of data, and it allows customization of the
 /// digest length
-class SHA3 extends _Keccack implements SerializableHash {
+class SHA3 extends _Keccack implements SerializableHash<HashBytesState> {
   // Constructor for SHA3 with an optional positional parameter digestLength
   SHA3([int digestLength = 32])
       : getDigestLength = digestLength,
@@ -310,7 +311,7 @@ class SHA3 extends _Keccack implements SerializableHash {
   @override
   HashBytesState saveState() {
     if (_finished) {
-      throw MessageException("SHA3: cannot save finished state");
+      throw const MessageException("SHA3: cannot save finished state");
     }
     return HashBytesState(data: List<int>.from(_state), pos: _pos);
   }
@@ -326,8 +327,7 @@ class SHA3 extends _Keccack implements SerializableHash {
   ///
   /// Returns the current instance of the hash algorithm with the restored state.
   @override
-  SHA3 restoreState(HashState savedState) {
-    savedState as HashBytesState;
+  SHA3 restoreState(HashBytesState savedState) {
     _state.setAll(0, savedState.data);
     _pos = savedState.pos;
     _finished = false;
@@ -340,8 +340,7 @@ class SHA3 extends _Keccack implements SerializableHash {
   ///
   /// [savedState]: The hash state to be cleaned and reset.
   @override
-  void cleanSavedState(HashState savedState) {
-    savedState as HashBytesState;
+  void cleanSavedState(HashBytesState savedState) {
     zero(savedState.data);
     savedState.pos = 0;
   }
@@ -441,7 +440,7 @@ class SHA3512 extends SHA3 {
 }
 
 /// The `SHAKE` class represents the SHAKE (Secure Hash Algorithm KEccak) extendable-output hash function.
-class SHAKE extends _Keccack implements SerializableHash {
+class SHAKE extends _Keccack implements SerializableHash<HashBytesState> {
   /// The desired output size in bits for the SHAKE digest.
   final int bitSize;
 
@@ -495,10 +494,10 @@ class SHAKE extends _Keccack implements SerializableHash {
   ///
   /// Returns the current instance of the hash algorithm with the restored state.
   @override
-  SHAKE restoreState(dynamic savedState) {
+  SHAKE restoreState(HashBytesState savedState) {
     savedState as List<int>;
-    _state.setAll(0, savedState);
-    _pos = savedState.length;
+    _state.setAll(0, savedState.data);
+    _pos = savedState.pos;
     _finished = false;
     return this;
   }
@@ -559,7 +558,7 @@ class SHAKE extends _Keccack implements SerializableHash {
   @override
   HashBytesState saveState() {
     if (_finished) {
-      throw MessageException("SHA3: cannot save finished state");
+      throw const MessageException("SHA3: cannot save finished state");
     }
     return HashBytesState(data: List<int>.from(_state), pos: _pos);
   }
@@ -1018,7 +1017,8 @@ void _keccakf(List<int> sh, List<int> sl, List<int> buf) {
 /// where data is processed in chunks or sections, and the `pos` field keeps track of the current position
 /// within the data buffer.
 class HashBytesState implements HashState {
-  HashBytesState({required this.data, required this.pos});
+  HashBytesState({required List<int> data, required this.pos})
+      : data = List<int>.from(data);
   final List<int> data;
   int pos;
 }

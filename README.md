@@ -10,7 +10,6 @@ This comprehensive package has been shaped by the influence of several key sourc
 - js [stablelib](https://github.com/StableLib/stablelib)
 - rust [strobe](https://github.com/rozbb/strobe-rs)
 
-
 ## Features
 
 **Encoding and Decoding:**
@@ -32,34 +31,36 @@ This comprehensive package has been shaped by the influence of several key sourc
 8. **UUIDv4 Generation:** Generate random UUIDs (Universally Unique Identifiers) following the UUIDv4 standard.
 
 **Blockchain Address Encoding/Decoding:**
-   - Zilliqa (ZIL)
-   - Tezos (XTZ)
-   - Ripple (XRP)
-   - Monero (XMR)
-   - Substrate address
-   - Solana (SOL)
-   - P2WPKH
-   - P2TR
-   - P2SH
-   - Bitcoin Cash P2PKH
-   - Harmony (ONE)
-   - OKEx
-   - Neo
-   - NEAR
-   - Nano
-   - Injective
-   - ICON
-   - Filecoin
-   - Ethereum
-   - Ergo
-   - EOS
-   - Elrond
-   - AVAX
-   - Atom
-   - Aptos
-   - Algorand
-   - Ada Shelley
-   - Ada Byron
+
+- Zilliqa (ZIL)
+- Tezos (XTZ)
+- Ripple (XRP)
+- Monero (XMR)
+- Substrate address
+- Solana (SOL)
+- P2WPKH
+- P2TR
+- P2SH
+- Bitcoin Cash P2PKH
+- Harmony (ONE)
+- OKEx
+- Neo
+- NEAR
+- Nano
+- Injective
+- ICON
+- Filecoin
+- Ethereum
+- Ergo
+- EOS
+- Elrond
+- AVAX
+- Atom
+- Aptos
+- Algorand
+- Ada Shelley
+- Ada Byron
+- Ton
 
 **Binary Data:**
 
@@ -90,6 +91,7 @@ This comprehensive package has been shaped by the influence of several key sourc
     - SHA256
     - SHA384
     - SHA512
+    - XXhash
 
    These algorithms provide a wide range of cryptographic functions, including encryption, decryption, message authentication, hashing, and more, to enhance security and data integrity in applications.
 
@@ -129,35 +131,36 @@ This comprehensive package has been shaped by the influence of several key sourc
 
 24. **Electrum Mnemonic V1 and V2 with Key and Address Management:** Support for both Electrum Mnemonic V1 and V2, including SegWit and Standard transactions.
 
+26. **TonMnemonic:** Support for Ton mnemonics has been added, enabling creation, validation, and seed generation.
+
 These features make your package a comprehensive solution for encoding, cryptography, blockchain management, BIP39 mnemonic support, and diverse blockchain address encoding and decoding needs.
 
 25. **Sign and Verification:** Implements classes for signing and verifying transaction digests.
-   - Bitcoin (ECDSA, Schnorr)
-   - BitcoinCash (EDDSA)
-   - Dogecoin (EDDSA)
-   - Litecoin (EDDSA)
-   - Dash (EDDSA)
-   - BSV (EDDSA)
-   - Ethereum (EDDSA)
-   - Tron (EDDSA)
-   - Solana (EDDSA)
-   - XRP (EDDSA, ECDSA)
-   - Solana (EDDSA, EDDSA Khalow)
+
+- Bitcoin (ECDSA, Schnorr)
+- BitcoinCash (EDDSA)
+- Dogecoin (EDDSA)
+- Litecoin (EDDSA)
+- Dash (EDDSA)
+- BSV (EDDSA)
+- Ethereum (EDDSA)
+- Tron (EDDSA)
+- Solana (EDDSA)
+- XRP (EDDSA, ECDSA)
+- Solana (EDDSA, EDDSA Khalow)
 
 **Example: Explore Our Toolkit**
 
 Discover the capabilities of our comprehensive crypto and blockchain toolkit through interactive tests. Visit our [test page](https://github.com/mrtnetwork/blockchain_utils/tree/main/test) to access thousands of examples, showcasing pure Dart's cross-platform functionality. Learn encoding, cryptography, address management, mnemonics, and more.
 
-
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:
- - Fork the repository and create a new branch.
- - Make your changes and ensure tests pass.
- - Submit a pull request with a detailed description of your changes.
+
+- Fork the repository and create a new branch.
+- Make your changes and ensure tests pass.
+- Submit a pull request with a detailed description of your changes.
 
 ## Feature requests and bugs #
 
 Please file feature requests and bugs in the issue tracker.
-
-

@@ -76,6 +76,7 @@ class Slip44 {
   static const int bitcoinSv = 236;
   static const int algorand = 283;
   static const int zilliqa = 313;
+  static const int ton = 607;
   static const int terra = 330;
   static const int polkadot = 354;
   static const int nearProtocol = 397;
@@ -101,4 +102,7 @@ class Slip44 {
   static const int avalanche = 9000;
   static const int celo = 52752;
   static const int piNetwork = 314159;
+
+  /// Unofficial coin id
+  static const int pepecoin = 3434;
 }

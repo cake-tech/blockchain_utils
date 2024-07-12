@@ -23,7 +23,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-import 'package:blockchain_utils/numbers/bigint_utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
 import 'package:blockchain_utils/crypto/crypto/hmac/hmac.dart';
 
@@ -58,7 +58,7 @@ class RFC6979 {
   /// Note: The RFC6979 algorithm ensures that K values are generated deterministically
   ///       and securely, which is essential for cryptographic operations.
   static BigInt generateK(
-      BigInt order, BigInt secexp, Hash Function() hashFunc, List<int> data,
+      BigInt order, BigInt secexp, HashFunc hashFunc, List<int> data,
       {int retryGn = 0, List<int>? extraEntropy}) {
     int qlen = order.bitLength;
     final hx = hashFunc();

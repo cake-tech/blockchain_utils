@@ -1,29 +1,4 @@
-import 'package:blockchain_utils/bip/address/ada/ada_byron_addr.dart';
-import 'package:blockchain_utils/bip/address/algo_addr.dart';
-import 'package:blockchain_utils/bip/address/aptos_addr.dart';
-import 'package:blockchain_utils/bip/address/atom_addr.dart';
-import 'package:blockchain_utils/bip/address/avax_addr.dart';
-import 'package:blockchain_utils/bip/address/egld_addr.dart';
-import 'package:blockchain_utils/bip/address/eos_addr.dart';
-import 'package:blockchain_utils/bip/address/ergo.dart';
-import 'package:blockchain_utils/bip/address/eth_addr.dart';
-import 'package:blockchain_utils/bip/address/fil_addr.dart';
-import 'package:blockchain_utils/bip/address/icx_addr.dart';
-import 'package:blockchain_utils/bip/address/inj_addr.dart';
-import 'package:blockchain_utils/bip/address/nano_addr.dart';
-import 'package:blockchain_utils/bip/address/near_addr.dart';
-import 'package:blockchain_utils/bip/address/neo_addr.dart';
-import 'package:blockchain_utils/bip/address/okex_addr.dart';
-import 'package:blockchain_utils/bip/address/one_addr.dart';
-import 'package:blockchain_utils/bip/address/p2pkh_addr.dart';
-import 'package:blockchain_utils/bip/address/sol_addr.dart';
-import 'package:blockchain_utils/bip/address/substrate_addr.dart';
-import 'package:blockchain_utils/bip/address/trx_addr.dart';
-import 'package:blockchain_utils/bip/address/xlm_addr.dart';
-import 'package:blockchain_utils/bip/address/xmr_addr.dart';
-import 'package:blockchain_utils/bip/address/xrp_addr.dart';
-import 'package:blockchain_utils/bip/address/xtz_addr.dart';
-import 'package:blockchain_utils/bip/address/zil_addr.dart';
+import 'package:blockchain_utils/bip/address/encoders.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_const.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_key_net_ver.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_bitcoin_cash_conf.dart';
@@ -557,6 +532,34 @@ class Bip44Conf {
     addrParams: {
       "net_ver": CoinsConf.dogecoinTestNet.params.p2pkhNetVer!,
     },
+  );
+
+  /// Configuration for Pepecoin main net
+  static final CoinConfig pepeMainnet = CoinConfig(
+    coinNames: CoinsConf.pepeMainnet.coinName,
+    coinIdx: Slip44.pepecoin,
+    isTestnet: false,
+    defPath: derPathNonHardenedFull,
+    keyNetVer: Bip32KeyNetVersions(List<int>.from([0x02, 0xfa, 0xca, 0xfd]),
+        List<int>.from([0x02, 0xfa, 0xc3, 0x98])),
+    wifNetVer: CoinsConf.pepeMainnet.params.wifNetVer,
+    type: EllipticCurveTypes.secp256k1,
+    addressEncoder: ([dynamic kwargs]) => P2PKHAddrEncoder(),
+    addrParams: {"net_ver": CoinsConf.pepeMainnet.params.p2pkhNetVer!},
+  );
+
+  /// Configuration for Pepecoin test net
+  static final CoinConfig pepeTestnet = CoinConfig(
+    coinNames: CoinsConf.pepeTestnet.coinName,
+    coinIdx: Slip44.testnet,
+    isTestnet: true,
+    defPath: derPathNonHardenedFull,
+    keyNetVer: Bip32KeyNetVersions(List<int>.from([0x04, 0x32, 0xa9, 0xa8]),
+        List<int>.from([0x04, 0x32, 0xa2, 0x43])),
+    wifNetVer: CoinsConf.pepeTestnet.params.wifNetVer,
+    type: EllipticCurveTypes.secp256k1,
+    addressEncoder: ([dynamic kwargs]) => P2PKHAddrEncoder(),
+    addrParams: {"net_ver": CoinsConf.pepeTestnet.params.p2pkhNetVer!},
   );
 
   /// Configuration for eCash main net
@@ -1121,7 +1124,7 @@ class Bip44Conf {
     coinNames: CoinsConf.ripple.coinName,
     coinIdx: Slip44.ripple,
     isTestnet: false,
-    defPath: derPathHardenedShort,
+    defPath: derPathHardenedFull,
     keyNetVer: bip44BtcKeyNetVerMain,
     wifNetVer: null,
     type: EllipticCurveTypes.ed25519,
@@ -1137,7 +1140,7 @@ class Bip44Conf {
     coinNames: CoinsConf.ripple.coinName,
     coinIdx: Slip44.testnet,
     isTestnet: true,
-    defPath: derPathHardenedShort,
+    defPath: derPathHardenedFull,
     keyNetVer: bip44BtcKeyNetVerMain,
     wifNetVer: null,
     type: EllipticCurveTypes.ed25519,
@@ -1351,5 +1354,28 @@ class Bip44Conf {
     type: EllipticCurveTypes.secp256k1,
     addressEncoder: ([dynamic kwargs]) => ZilAddrEncoder(),
     addrParams: {},
+  );
+
+  static final CoinConfig tonMainnet = CoinConfig(
+    coinNames: CoinsConf.tonMainnet.coinName,
+    coinIdx: Slip44.ton,
+    isTestnet: false,
+    defPath: derPathHardenedShort,
+    keyNetVer: Bip44Conf.bip44BtcKeyNetVerMain,
+    wifNetVer: null,
+    type: EllipticCurveTypes.ed25519,
+    addressEncoder: ([dynamic kwargs]) => TonAddrEncoder(),
+    addrParams: {"workchain": CoinsConf.tonMainnet.params.workchain},
+  );
+  static final CoinConfig tonTestnet = CoinConfig(
+    coinNames: CoinsConf.tonTestnet.coinName,
+    coinIdx: Slip44.testnet,
+    isTestnet: true,
+    defPath: derPathHardenedShort,
+    keyNetVer: Bip44Conf.bip44BtcKeyNetVerMain,
+    wifNetVer: null,
+    type: EllipticCurveTypes.ed25519,
+    addressEncoder: ([dynamic kwargs]) => TonAddrEncoder(),
+    addrParams: {"workchain": CoinsConf.tonTestnet.params.workchain},
   );
 }

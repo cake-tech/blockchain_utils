@@ -1,12 +1,7 @@
 import 'package:blockchain_utils/crypto/crypto/aes/padding.dart';
-import 'package:blockchain_utils/crypto/crypto/chacha20poly1305/chacha20poly1305.dart';
-import 'package:blockchain_utils/crypto/crypto/ecb/ecb.dart';
-import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
-import 'package:blockchain_utils/crypto/crypto/hmac/hmac.dart';
-import 'package:blockchain_utils/crypto/crypto/pbkdf2/pbkdf2.dart';
-import 'package:blockchain_utils/crypto/crypto/prng/fortuna.dart';
+import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/exception/exception.dart';
-import 'package:blockchain_utils/tuple/tuple.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 
 /// QuickCrypto provides a set of utility methods for cryptographic operations.
 ///
@@ -33,7 +28,7 @@ class QuickCrypto {
       {required List<int> password,
       required List<int> salt,
       required int iterations,
-      Hash Function()? hash,
+      HashFunc? hash,
       int? dklen}) {
     final hashing = (hash ?? () => SHA512());
 
@@ -114,6 +109,17 @@ class QuickCrypto {
   }) =>
       _blake2bHash(data, blake2b160DigestSize, key: key, salt: salt);
 
+  /// Define the size of BLAKE2b-160 digests, which is 20 bytes (128 bits)
+  static const int blake2b128DigestSize = 16;
+
+  /// Calculate the BLAKE2b-128 hash of the input data
+  static List<int> blake2b128Hash(
+    List<int> data, {
+    List<int>? key,
+    List<int>? salt,
+  }) =>
+      _blake2bHash(data, blake2b128DigestSize, key: key, salt: salt);
+
   /// Define the size of BLAKE2b-40 digests, which is 5 bytes (40 bits)
   static const int blake2b40DigestSize = 5;
 
@@ -136,6 +142,27 @@ class QuickCrypto {
   }) =>
       _blake2bHash(data, blake2b32DigestSize, key: key, salt: salt);
 
+  static List<int> _xxHash(List<int> data, int digestSize) {
+    return XXHash64.hash(data, bitlength: digestSize * 8);
+  }
+
+  static const int twoX64DigestSize = 8;
+  static List<int> twoX64(List<int> data) {
+    return _xxHash(data, twoX64DigestSize);
+  }
+
+  static const int twoX128DigestSize = 16;
+  static List<int> twoX128(List<int> data) {
+    return _xxHash(data, twoX128DigestSize);
+  }
+
+  static const int twoX256DigestSize = 32;
+  static List<int> twoX256(List<int> data) {
+    return _xxHash(data, twoX256DigestSize);
+  }
+
+  //  Twox128: (data) => utilCrypto.xxhashAsU8a(data, 128),
+  //       Twox256: (data) => utilCrypto.xxhashAsU8a(data, 256),
   /// Calculate the SHA-512/256 hash of the input data
   static List<int> sha512256Hash(List<int> data) {
     return SHA512256.hash(data);
@@ -158,7 +185,7 @@ class QuickCrypto {
   /// returns A tuple containing the first and second halves of the SHA512 hash.
   static Tuple<List<int>, List<int>> sha512HashHalves(List<int> data) {
     final hash = SHA512.hash(data);
-    final halvesLength = sha512DeigestLength ~/ 2;
+    const halvesLength = sha512DeigestLength ~/ 2;
     return Tuple(hash.sublist(0, halvesLength), hash.sublist(halvesLength));
   }
 
@@ -232,7 +259,7 @@ class QuickCrypto {
     if (decrypt != null) {
       return decrypt;
     }
-    throw MessageException("ChaCha20-Poly1305 decryption fail");
+    throw const MessageException("ChaCha20-Poly1305 decryption fail");
   }
 
   /// Encrypt data using the ChaCha20-Poly1305 authenticated encryption algorithm.
@@ -272,5 +299,16 @@ class QuickCrypto {
 
     /// Return the generated random bytes.
     return r;
+  }
+
+  static List<int> processCtr(
+      {required List<int> key,
+      required List<int> iv,
+      required List<int> data}) {
+    final CTR ctr = CTR(AES(key), iv);
+    final xor = List<int>.filled(data.length, 0);
+    ctr.streamXOR(data, xor);
+    ctr.clean();
+    return xor;
   }
 }

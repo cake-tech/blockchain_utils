@@ -4,7 +4,7 @@ import 'package:blockchain_utils/crypto/crypto/cdsa/ecdsa/signature.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/ec_projective_point.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/rfc6979/rfc6979.dart';
 import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
-import 'package:blockchain_utils/numbers/bigint_utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'dart:math' as math;
 import 'package:blockchain_utils/exception/exception.dart';
 
@@ -29,7 +29,8 @@ class EcdsaSigningKey {
     List<int> digestBytes = List.from(digest);
     if (!truncate) {
       if (digest.length > generator.curve.baselen) {
-        throw ArgumentException("this curve is too short for digest length");
+        throw const ArgumentException(
+            "this curve is too short for digest length");
       }
     } else {
       digestBytes = digest.sublist(0, generator.curve.baselen);
@@ -62,7 +63,7 @@ class EcdsaSigningKey {
   /// Uses RFC 6979 for 'k' value generation to mitigate certain vulnerabilities associated with random 'k' generation.
   ECDSASignature signDigestDeterminstic({
     required List<int> digest,
-    required Hash Function() hashFunc,
+    required HashFunc hashFunc,
     List<int> extraEntropy = const [],
     bool truncate = false,
   }) {
