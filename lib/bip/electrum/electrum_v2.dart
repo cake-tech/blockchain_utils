@@ -114,8 +114,7 @@ class ElectrumV2Standard extends ElectrumV2Base {
   /// Get the P2PKH (pay-to-pub-key-hash) address for a specific change and address index.
   @override
   String getAddress(int changeIndex, int addressIndex) {
-    return P2PKHAddrEncoder().encodeKey(
-        getPublicKey(changeIndex, addressIndex).compressed,
+    return P2PKHAddrEncoder().encodeKey(getPublicKey(changeIndex, addressIndex).compressed,
         {"net_ver": CoinsConf.bitcoinMainNet.params.p2pkhNetVer!});
   }
 
@@ -154,8 +153,7 @@ class ElectrumV2Segwit extends ElectrumV2Base {
   /// Get the P2WPKH (pay-to-witness-pub-key-hash) address for a specific change and address index.
   @override
   String getAddress(int changeIndex, int addressIndex) {
-    return P2WPKHAddrEncoder()
-        .encodeKey(getPublicKey(changeIndex, addressIndex).compressed, {
+    return P2WPKHAddrEncoder().encodeKey(getPublicKey(changeIndex, addressIndex).compressed, {
       "hrp": CoinsConf.bitcoinMainNet.params.p2wpkhHrp!,
     });
   }

@@ -68,4 +68,8 @@ class Bip39SeedGenerator {
       iterations: Bip39SeedGeneratorConst.seedPbkdf2Rounds,
     );
   }
+
+  static List<int> generateFromString(String mnemonic, [String? passphrase]) {
+    return Bip39SeedGenerator(Mnemonic.fromString(mnemonic)).generate(passphrase ?? "");
+  }
 }

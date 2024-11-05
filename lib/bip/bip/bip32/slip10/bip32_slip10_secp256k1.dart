@@ -7,7 +7,9 @@ import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_key_net_ver.dart';
 import 'package:blockchain_utils/bip/bip/bip32/slip10/bip32_slip10_key_derivator.dart';
 import 'package:blockchain_utils/bip/bip/bip32/slip10/bip32_slip10_mst_key_generator.dart';
+import 'package:blockchain_utils/bip/bip/bip39/bip39_seed_generator.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
+import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 
 /// Represents a Bip32Slip10Secp256k1 hierarchical deterministic key for SECP256K1 curve.
 ///
@@ -31,16 +33,19 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       required Bip32KeyNetVersions keyNetVer,
       required List<int>? privKey,
       required List<int>? pubKey})
-      : super(
-            keyData: keyData,
-            keyNetVer: keyNetVer,
-            privKey: privKey,
-            pubKey: pubKey);
+      : super(keyData: keyData, keyNetVer: keyNetVer, privKey: privKey, pubKey: pubKey);
 
   /// constructor for creating a key from a seed.
-  Bip32Slip10Secp256k1.fromSeed(List<int> seedBytes,
-      [Bip32KeyNetVersions? keyNetVer])
+  Bip32Slip10Secp256k1.fromSeed(List<int> seedBytes, [Bip32KeyNetVersions? keyNetVer])
       : super.fromSeed(seedBytes, keyNetVer);
+
+  /// constructor for creating a key from a seed.
+  Bip32Slip10Secp256k1.fromMnemonic(String mnemonic,
+      [String? passphrase, Bip32KeyNetVersions? keyNetVer])
+      : super.fromSeed(
+          Bip39SeedGenerator(Mnemonic.fromString(mnemonic)).generate(passphrase ?? ""),
+          keyNetVer,
+        );
 
   /// constructor for creating a key from a public key.
   Bip32Slip10Secp256k1.fromPublicKey(List<int> pubkey,
@@ -53,8 +58,7 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       : super.fromPrivateKey(privKey, keyData, keyNetVer);
 
   /// constructor for creating a key from an extended key string.
-  Bip32Slip10Secp256k1.fromExtendedKey(String exKeyStr,
-      [Bip32KeyNetVersions? keyNetVer])
+  Bip32Slip10Secp256k1.fromExtendedKey(String exKeyStr, [Bip32KeyNetVersions? keyNetVer])
       : super.fromExtendedKey(exKeyStr, keyNetVer);
 
   /// Returns the curve type, SECP256K1.
@@ -117,8 +121,7 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
             'Private child derivation with not-hardened index is not supported');
       }
       assert(!isPublicOnly);
-      final result =
-          keyDerivator.ckdPriv(privateKey, publicKey, index, curveType);
+      final result = keyDerivator.ckdPriv(privateKey, publicKey, index, curveType);
 
       return Bip32Slip10Secp256k1._(
           keyData: Bip32KeyData(

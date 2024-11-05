@@ -24,8 +24,7 @@ class ElectrumV1SeedGenerator {
   /// [language]: The language used for mnemonic decoding (default: English).
   ElectrumV1SeedGenerator(String mnemonic,
       [ElectrumV1Languages? language = ElectrumV1Languages.english])
-      : _seed =
-            _generateSeed(ElectrumV1MnemonicDecoder(language).decode(mnemonic));
+      : _seed = _generateSeed(ElectrumV1MnemonicDecoder(language).decode(mnemonic));
 
   /// Generates the Electrum V1 seed.
   ///

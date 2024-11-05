@@ -27,8 +27,7 @@ abstract class Bip32Base {
   /// Gets the private key of this BIP-32 key.
   Bip32PrivateKey get privateKey {
     if (isPublicOnly) {
-      throw const Bip32KeyError(
-          'Public-only deterministic keys have no private half');
+      throw const Bip32KeyError('Public-only deterministic keys have no private half');
     }
     return _privKey!;
   }
@@ -39,8 +38,7 @@ abstract class Bip32Base {
   /// optional [keyNetVer] specifies the key network version.
   Bip32Base.fromExtendedKey(String exKeyStr, [Bip32KeyNetVersions? keyNetVer]) {
     keyNetVer ??= defaultKeyNetVersion;
-    final deserKey =
-        Bip32KeyDeserializer.deserializeKey(exKeyStr, keyNetVer: keyNetVer);
+    final deserKey = Bip32KeyDeserializer.deserializeKey(exKeyStr, keyNetVer: keyNetVer);
 
     final keyBytes = deserKey.keyBytes;
     Bip32KeyData keyData = deserKey.keyData;
@@ -56,10 +54,10 @@ abstract class Bip32Base {
             'Invalid extended master key (wrong child index: ${keyData.index.toInt()})');
       }
     }
-    _privKey = _initializePrivateKey(isPublic ? null : keyBytes,
-        isPublic ? keyBytes : null, keyData, keyNetVer, curveType);
-    _pubKey = _initializePublicKey(isPublic ? null : keyBytes,
-        isPublic ? keyBytes : null, keyData, keyNetVer, curveType);
+    _privKey = _initializePrivateKey(
+        isPublic ? null : keyBytes, isPublic ? keyBytes : null, keyData, keyNetVer, curveType);
+    _pubKey = _initializePublicKey(
+        isPublic ? null : keyBytes, isPublic ? keyBytes : null, keyData, keyNetVer, curveType);
   }
 
   /// Creates a BIP-32 key from a seed.
@@ -70,10 +68,8 @@ abstract class Bip32Base {
     keyNetVer ??= defaultKeyNetVersion;
     final result = masterKeyGenerator.generateFromSeed(seedBytes);
     final keyData = Bip32KeyData(chainCode: Bip32ChainCode(result.item2));
-    _privKey = _initializePrivateKey(
-        result.item1, null, keyData, keyNetVer, curveType);
-    _pubKey =
-        _initializePublicKey(result.item1, null, keyData, keyNetVer, curveType);
+    _privKey = _initializePrivateKey(result.item1, null, keyData, keyNetVer, curveType);
+    _pubKey = _initializePublicKey(result.item1, null, keyData, keyNetVer, curveType);
   }
 
   /// Creates a BIP-32 key from a private key.
@@ -84,10 +80,8 @@ abstract class Bip32Base {
       [Bip32KeyData? keyData, Bip32KeyNetVersions? keyNetVer]) {
     keyNetVer ??= defaultKeyNetVersion;
     keyData ??= Bip32KeyData();
-    _privKey =
-        _initializePrivateKey(privKey, null, keyData, keyNetVer, curveType);
-    _pubKey =
-        _initializePublicKey(privKey, null, keyData, keyNetVer, curveType);
+    _privKey = _initializePrivateKey(privKey, null, keyData, keyNetVer, curveType);
+    _pubKey = _initializePublicKey(privKey, null, keyData, keyNetVer, curveType);
   }
 
   /// Creates a BIP-32 key from a public key.
@@ -98,8 +92,7 @@ abstract class Bip32Base {
       [Bip32KeyData? keyData, Bip32KeyNetVersions? keyNetVer]) {
     keyNetVer ??= defaultKeyNetVersion;
     keyData ??= Bip32KeyData();
-    _privKey =
-        _initializePrivateKey(null, pubKey, keyData, keyNetVer, curveType);
+    _privKey = _initializePrivateKey(null, pubKey, keyData, keyNetVer, curveType);
     _pubKey = _initializePublicKey(null, pubKey, keyData, keyNetVer, curveType);
   }
 
@@ -113,25 +106,25 @@ abstract class Bip32Base {
     required Bip32KeyData keyData,
     required Bip32KeyNetVersions keyNetVer,
   }) {
-    _privKey =
-        _initializePrivateKey(privKey, pubKey, keyData, keyNetVer, curveType);
-    _pubKey =
-        _initializePublicKey(privKey, pubKey, keyData, keyNetVer, curveType);
+    _privKey = _initializePrivateKey(privKey, pubKey, keyData, keyNetVer, curveType);
+    _pubKey = _initializePublicKey(privKey, pubKey, keyData, keyNetVer, curveType);
   }
 
   /// Derives a new BIP-32 key using a derivation path.
   ///
   /// The [path] parameter represents the derivation path, such as "m/0/1/2".
   Bip32Base derivePath(String path) {
-    final pathInstance = Bip32PathParser.parse(path);
+    return derive(Bip32PathParser.parse(path));
+  }
 
-    if (depth.depth > 0 && pathInstance.isAbsolute) {
+  Bip32Base derive(Bip32Path path) {
+    if (depth.depth > 0 && path.isAbsolute) {
       throw const ArgumentException(
           'Absolute paths can only be derived from a master key, not child ones');
     }
     Bip32Base derivedObject = this;
 
-    for (final pathElement in pathInstance.elems) {
+    for (final pathElement in path.elems) {
       derivedObject = derivedObject.childKey(pathElement);
     }
     return derivedObject;
@@ -186,12 +179,8 @@ abstract class Bip32Base {
   }
 
   /// Initializes a private key if [privKey] is provided, otherwise returns null.
-  static Bip32PrivateKey? _initializePrivateKey(
-      List<int>? privKey,
-      List<int>? pubKey,
-      Bip32KeyData keyData,
-      Bip32KeyNetVersions keyNetVer,
-      EllipticCurveTypes curve) {
+  static Bip32PrivateKey? _initializePrivateKey(List<int>? privKey, List<int>? pubKey,
+      Bip32KeyData keyData, Bip32KeyNetVersions keyNetVer, EllipticCurveTypes curve) {
     if (privKey != null) {
       final prv = Bip32PrivateKey.fromBytes(
         privKey,
@@ -205,12 +194,8 @@ abstract class Bip32Base {
   }
 
   /// Initializes a public key based on [privKey] or [pubKey].
-  static Bip32PublicKey _initializePublicKey(
-      List<int>? privKey,
-      List<int>? pubKey,
-      Bip32KeyData keyData,
-      Bip32KeyNetVersions keyNetVer,
-      EllipticCurveTypes curve) {
+  static Bip32PublicKey _initializePublicKey(List<int>? privKey, List<int>? pubKey,
+      Bip32KeyData keyData, Bip32KeyNetVersions keyNetVer, EllipticCurveTypes curve) {
     if (privKey != null) {
       final bip32PrivateKey = Bip32PrivateKey.fromBytes(
         privKey,

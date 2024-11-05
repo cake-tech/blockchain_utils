@@ -37,4 +37,8 @@ class ElectrumV2SeedGenerator {
       iterations: ElectrumV2SeedGeneratorConst.seedPbkdf2Rounds,
     );
   }
+
+  static List<int> generateFromString(String mnemonic, [String? passphrase]) {
+    return ElectrumV2SeedGenerator(Mnemonic.fromString(mnemonic)).generate(passphrase ?? '');
+  }
 }

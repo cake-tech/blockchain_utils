@@ -27,8 +27,7 @@ class Bip32KeyDataConst {
 class Bip32ChainCode {
   final List<int> _chainCode;
   Bip32ChainCode([List<int>? chaincode])
-      : _chainCode = chaincode ??
-            List<int>.filled(Bip32KeyDataConst.chaincodeByteLen, 0);
+      : _chainCode = chaincode ?? List<int>.filled(Bip32KeyDataConst.chaincodeByteLen, 0);
 
   /// Get the fixed length in bytes.
   static int fixedLength() {
@@ -73,8 +72,7 @@ class Bip32FingerPrint {
 
   /// Get if the fingerprint corresponds to a master key.
   bool isMasterKey() {
-    return BytesUtils.bytesEqual(
-        toBytes(), Bip32KeyDataConst.fingerprintMasterKey);
+    return BytesUtils.bytesEqual(toBytes(), Bip32KeyDataConst.fingerprintMasterKey);
   }
 }
 
@@ -135,20 +133,17 @@ class Bip32KeyIndex {
 
   /// Harden the specified index and return it.
   factory Bip32KeyIndex.hardenIndex(int index) {
-    return Bip32KeyIndex(
-        BitUtils.setBit(index, Bip32KeyDataConst.keyIndexHardenedBitNum));
+    return Bip32KeyIndex(BitUtils.setBit(index, Bip32KeyDataConst.keyIndexHardenedBitNum));
   }
 
   /// Unharden the specified index and return it.
   factory Bip32KeyIndex.unhardenIndex(int index) {
-    return Bip32KeyIndex(
-        BitUtils.resetBit(index, Bip32KeyDataConst.keyIndexHardenedBitNum));
+    return Bip32KeyIndex(BitUtils.resetBit(index, Bip32KeyDataConst.keyIndexHardenedBitNum));
   }
 
   /// Get if the specified index is hardened.
   static bool isHardenedIndex(int index) {
-    return BitUtils.intIsBitSet(
-        index, Bip32KeyDataConst.keyIndexHardenedBitNum);
+    return BitUtils.intIsBitSet(index, Bip32KeyDataConst.keyIndexHardenedBitNum);
   }
 
   factory Bip32KeyIndex(int index) {
@@ -205,7 +200,7 @@ class Bip32KeyIndex {
 
   @override
   String toString() {
-    return "index: $index";
+    return index.toString();
   }
 }
 

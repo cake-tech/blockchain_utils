@@ -76,8 +76,8 @@ class Bip32Path {
   /// Creates a Bip32Path instance.
   ///
   /// [elems] is an optional list of key indices in the path.
-  /// [isAbsolute] specifies if the path is absolute (default: true).
-  Bip32Path({List<Bip32KeyIndex>? elems, this.isAbsolute = true})
+  /// [isAbsolute] specifies if the path is absolute (default: false).
+  Bip32Path({List<Bip32KeyIndex>? elems, this.isAbsolute = false})
       : elems = elems ?? List.empty(growable: true);
 
   /// Adds a key index element to the path and returns a new Bip32Path.
