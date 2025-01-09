@@ -89,13 +89,13 @@ int add32(int x, int y) => (x + y) & mask32;
 
 /// Rotates a 32-bit integer left by a specified number of bits.
 int rotl32(int val, int shift) {
-  var modShift = shift & 31;
+  final modShift = shift & 31;
   return ((val << modShift) & mask32) | ((val & mask32) >> (32 - modShift));
 }
 
 /// Rotates a 32-bit integer right by a specified number of bits.
 int rotr32(int val, int shift) {
-  var modShift = shift & 31;
+  final modShift = shift & 31;
   return ((val >> modShift) & mask32) | ((val & mask32) << (32 - modShift));
 }
 
@@ -118,3 +118,15 @@ final BigInt maskBig8 = BigInt.from(mask8);
 final BigInt maskBig16 = BigInt.from(mask16);
 
 final BigInt maskBig32 = BigInt.from(mask32);
+final BigInt maskBig64 = BigInt.parse("FFFFFFFFFFFFFFFF", radix: 16);
+
+final BigInt minInt64 = BigInt.parse("-9223372036854775808");
+final BigInt maxInt64 = BigInt.parse("9223372036854775807");
+
+const int maxInt32 = 2147483647;
+const int minInt32 = -2147483648;
+
+const int maxUint32 = 4294967295;
+
+const int safeUint = 9007199254740991;
+const int safeInt = -9007199254740991;

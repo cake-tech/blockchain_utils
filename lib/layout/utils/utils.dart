@@ -1,6 +1,6 @@
 import 'dart:typed_data' show Endian;
 import 'package:blockchain_utils/bip/substrate/scale/substrate_scale_enc_cuint.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
 class LayoutSerializationUtils {
@@ -17,7 +17,6 @@ class LayoutSerializationUtils {
   }
 
   static Tuple<int, BigInt> decodeLength(List<int> bytes, {bool sign = false}) {
-    // print("come bytes $bytes ${bytes[0] & 0x03}");
     switch (bytes[0] & 0x03) {
       case 0x00:
         return Tuple(1, BigInt.from(bytes[0]) >> 2);

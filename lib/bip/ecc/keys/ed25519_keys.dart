@@ -1,11 +1,11 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/curve/curves.dart';
-import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/privatekey.dart';
-import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/publickey.dart';
+import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/keys/privatekey.dart';
+import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/keys/publickey.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/edwards.dart';
 import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 import 'i_keys.dart';
 
@@ -104,6 +104,16 @@ class Ed25519PublicKey implements IPublicKey {
     }
     return BytesUtils.toHexString(key, prefix: prefix, lowerCase: lowerCase);
   }
+
+  @override
+  operator ==(other) {
+    if (other is! Ed25519PublicKey) return false;
+    if (identical(this, other)) return true;
+    return _publicKey == other._publicKey && curve == other.curve;
+  }
+
+  @override
+  int get hashCode => HashCodeGenerator.generateHashCode([_publicKey, curve]);
 }
 
 /// A class representing an Ed25519 private key that implements the IPrivateKey interface.
@@ -127,7 +137,7 @@ class Ed25519PrivateKey implements IPrivateKey {
 
   /// curve type
   @override
-  EllipticCurveTypes get curveType {
+  EllipticCurveTypes get curve {
     return EllipticCurveTypes.ed25519;
   }
 
@@ -164,4 +174,14 @@ class Ed25519PrivateKey implements IPrivateKey {
   String toHex({bool lowerCase = true, String? prefix = ""}) {
     return BytesUtils.toHexString(raw, lowerCase: lowerCase, prefix: prefix);
   }
+
+  @override
+  operator ==(other) {
+    if (other is! Ed25519PrivateKey) return false;
+    if (identical(this, other)) return true;
+    return _privateKey == other._privateKey && curve == other.curve;
+  }
+
+  @override
+  int get hashCode => HashCodeGenerator.generateHashCode([_privateKey, curve]);
 }

@@ -1,3 +1,18 @@
+## 4.0.0
+
+- Minimum required Dart SDK version updated to 3.3.
+- Implemented an abstract class for chain services.
+- Unified service provider design to support a single provider architecture across all `MRTNETWORK` packages.
+
+## 3.5.0
+
+- Implemented Monero cryptographic operations.
+
+## 3.4.0
+
+- Stellar Address Support: Add support for stellar Contract address.
+- Fix incorrect CBOR encoding of large negative integers.
+
 ## 3.3.0
 
   - Fix substrate key generation from seed (ECDSA, EDDSA).

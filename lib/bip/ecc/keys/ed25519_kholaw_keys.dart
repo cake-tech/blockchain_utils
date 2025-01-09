@@ -3,10 +3,10 @@ import 'package:blockchain_utils/bip/ecc/keys/i_keys.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/bip/ecc/keys/ed25519_keys.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/curve/curves.dart';
-import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/privatekey.dart';
-import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/publickey.dart';
+import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/keys/privatekey.dart';
+import 'package:blockchain_utils/crypto/crypto/cdsa/eddsa/keys/publickey.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/edwards.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 /// Constants related to Ed25519-Kholaw keys, specifically the private key length in bytes.
 class Ed25519KholawKeysConst {
@@ -41,8 +41,7 @@ class Ed25519KholawPublicKey implements IPublicKey {
       Ed25519KholawPublicKey.fromBytes(keyBytes);
 
       return true;
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (_) {}
     return false;
   }
 
@@ -93,6 +92,16 @@ class Ed25519KholawPublicKey implements IPublicKey {
     }
     return BytesUtils.toHexString(key, prefix: prefix, lowerCase: lowerCase);
   }
+
+  @override
+  operator ==(other) {
+    if (other is! Ed25519KholawPublicKey) return false;
+    if (identical(this, other)) return true;
+    return _publicKey == other._publicKey && curve == other.curve;
+  }
+
+  @override
+  int get hashCode => HashCodeGenerator.generateHashCode([_publicKey, curve]);
 }
 
 /// A class representing an Ed25519-Kholaw private key that implements the IPrivateKey interface.
@@ -124,14 +133,13 @@ class Ed25519KholawPrivateKey implements IPrivateKey {
       Ed25519KholawPrivateKey.fromBytes(keyBytes);
 
       return true;
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (_) {}
     return false;
   }
 
   /// curve type
   @override
-  EllipticCurveTypes get curveType {
+  EllipticCurveTypes get curve {
     return EllipticCurveTypes.ed25519Kholaw;
   }
 
@@ -157,4 +165,14 @@ class Ed25519KholawPrivateKey implements IPrivateKey {
   String toHex({bool lowerCase = true, String? prefix = ""}) {
     return BytesUtils.toHexString(raw, lowerCase: lowerCase, prefix: prefix);
   }
+
+  @override
+  operator ==(other) {
+    if (other is! Ed25519KholawPrivateKey) return false;
+    if (identical(other, this)) return true;
+    return _privateKey == other._privateKey && curve == other.curve;
+  }
+
+  @override
+  int get hashCode => HashCodeGenerator.generateHashCode([_privateKey, curve]);
 }

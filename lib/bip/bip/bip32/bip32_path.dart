@@ -53,6 +53,7 @@
 */
 
 import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 
 import 'bip32_ex.dart';
 
@@ -76,9 +77,9 @@ class Bip32Path {
   /// Creates a Bip32Path instance.
   ///
   /// [elems] is an optional list of key indices in the path.
-  /// [isAbsolute] specifies if the path is absolute (default: false).
-  Bip32Path({List<Bip32KeyIndex>? elems, this.isAbsolute = false})
-      : elems = elems ?? List.empty(growable: true);
+  /// [isAbsolute] specifies if the path is absolute (default: true).
+  Bip32Path({List<Bip32KeyIndex> elems = const [], this.isAbsolute = true})
+      : elems = elems.immutable;
 
   /// Adds a key index element to the path and returns a new Bip32Path.
   Bip32Path addElem(Bip32KeyIndex elem) {
@@ -120,8 +121,7 @@ class Bip32PathParser {
       path = path.substring(0, path.length - 1);
     }
 
-    return _parseElements(
-        path.split("/").where((elem) => elem.isNotEmpty).toList());
+    return _parseElements(path.split("/").where((elem) => elem.isNotEmpty).toList());
   }
 
   /// Parses individual elements of a BIP32 path and constructs a Bip32Path object.
@@ -135,7 +135,7 @@ class Bip32PathParser {
       isAbsolute = true;
     }
 
-    List<Bip32KeyIndex> parsedElems = pathElems.map(_parseElem).toList();
+    final List<Bip32KeyIndex> parsedElems = pathElems.map(_parseElem).toList();
     return Bip32Path(elems: parsedElems, isAbsolute: isAbsolute);
   }
 
@@ -144,14 +144,13 @@ class Bip32PathParser {
   /// [pathElem] is the path element to be parsed.
   static Bip32KeyIndex _parseElem(String pathElem) {
     pathElem = pathElem.trim();
-    bool isHardened = Bip32PathConst.hardenedChars
-        .where((element) => pathElem.endsWith(element))
-        .isNotEmpty;
+    final bool isHardened =
+        Bip32PathConst.hardenedChars.where((element) => pathElem.endsWith(element)).isNotEmpty;
 
     if (isHardened) {
       pathElem = pathElem.substring(0, pathElem.length - 1);
     }
-    bool isNumeric = int.tryParse(pathElem) != null;
+    final bool isNumeric = int.tryParse(pathElem) != null;
     if (!isNumeric) {
       throw Bip32PathError("Invalid path element ($pathElem)");
     }

@@ -29,15 +29,14 @@ import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 class Bip32Slip10Secp256k1 extends Bip32Base {
   /// constructor for creating an instance with provided key data.
   Bip32Slip10Secp256k1._(
-      {required Bip32KeyData keyData,
-      required Bip32KeyNetVersions keyNetVer,
-      required List<int>? privKey,
-      required List<int>? pubKey})
-      : super(keyData: keyData, keyNetVer: keyNetVer, privKey: privKey, pubKey: pubKey);
+      {required super.keyData,
+      required super.keyNetVer,
+      required super.privKey,
+      required super.pubKey});
 
   /// constructor for creating a key from a seed.
-  Bip32Slip10Secp256k1.fromSeed(List<int> seedBytes, [Bip32KeyNetVersions? keyNetVer])
-      : super.fromSeed(seedBytes, keyNetVer);
+  Bip32Slip10Secp256k1.fromSeed(super.seedBytes, [super.keyNetVer])
+      : super.fromSeed();
 
   /// constructor for creating a key from a seed.
   Bip32Slip10Secp256k1.fromMnemonic(String mnemonic,
@@ -58,8 +57,8 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       : super.fromPrivateKey(privKey, keyData, keyNetVer);
 
   /// constructor for creating a key from an extended key string.
-  Bip32Slip10Secp256k1.fromExtendedKey(String exKeyStr, [Bip32KeyNetVersions? keyNetVer])
-      : super.fromExtendedKey(exKeyStr, keyNetVer);
+  Bip32Slip10Secp256k1.fromExtendedKey(super.exKeyStr, [super.keyNetVer])
+      : super.fromExtendedKey();
 
   /// Returns the curve type, SECP256K1.
   @override

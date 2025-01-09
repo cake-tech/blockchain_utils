@@ -6,12 +6,12 @@
 ///
 /// The `UUID` class within this library allows for the generation UUID V4
 
-library uuid;
+library;
 
 import 'dart:math' as math;
 
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 class UUID {
   /// Generates a version 4 (random) UUID (Universally Unique Identifier).
@@ -23,12 +23,6 @@ class UUID {
   ///
   /// Returns:
   /// A random UUIDv4 as a string in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".
-  ///
-  /// Example:
-  /// ```dart
-  /// final uuid = generateUUIDv4();
-  /// print(uuid); /// Output: "550e8400-e29b-41d4-a716-446655440000"
-  /// ```
   static String generateUUIDv4() {
     final random = math.Random.secure();
 
@@ -69,14 +63,7 @@ class UUID {
   /// - [uuidString]: The UUID string to convert to a binary buffer.
   ///
   /// Returns:
-  /// A binary buffer (List<int>) representing the UUID.
-  ///
-  /// Example:
-  /// ```dart
-  /// final uuid = '550e8400-e29b-41d4-a716-446655440000';
-  /// final buffer = toBuffer(uuid);
-  /// print(buffer); /// Output: [85, 14, 132, 0, 226, 155, 65, 212, 167, 22, 68, 102, 85, 68, 0, 0]
-  /// ```
+  /// A binary buffer (`List<int>`) representing the UUID.
   static List<int> toBuffer(String uuidString, {bool validate = true}) {
     if (validate && !isValidUUIDv4(uuidString)) {
       throw ArgumentException("invalid uuid string.",
@@ -103,20 +90,13 @@ class UUID {
   /// UUIDv4 string is commonly used to represent unique identifiers.
   ///
   /// Parameters:
-  /// - [buffer]: The binary buffer (List<int>) representing the UUID.
+  /// - [buffer]: The binary buffer (`List<int>`) representing the UUID.
   ///
   /// Returns:
   /// A UUIDv4 string.
   ///
-  /// Example:
-  /// ```dart
-  /// final buffer = List<int>.from([85, 14, 132, 0, 226, 155, 65, 212, 167, 22, 68, 102, 85, 68, 0, 0]);
-  /// final uuid = fromBuffer(buffer);
-  /// print(uuid); /// Output: '550e8400-e29b-41d4-a716-446655440000'
-  /// ```
-  ///
   /// Throws:
-  /// - [Exception] if the input buffer's length is not 16 bytes, as UUIDv4
+  /// - [ArgumentException] if the input buffer's length is not 16 bytes, as UUIDv4
   ///   buffers must be exactly 16 bytes long.
   ///
   /// Note:

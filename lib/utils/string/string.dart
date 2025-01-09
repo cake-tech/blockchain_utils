@@ -24,6 +24,7 @@ enum StringEncoding {
 class StringUtils {
   static final RegExp _hexBytesRegex = RegExp(r'^(0x|0X)?([0-9A-Fa-f]{2})+$');
   static final RegExp _hexaDecimalRegex = RegExp(r'^(0x|0X)?[0-9A-Fa-f]+$');
+
   static bool isHexBytes(String v) {
     return _hexBytesRegex.hasMatch(v);
   }
@@ -43,12 +44,8 @@ class StringUtils {
   static List<int>? tryToBytes(String? v) {
     if (v == null) return null;
     try {
-      if (isHexBytes(v)) {
-        return BytesUtils.fromHexString(v);
-      } else {
-        return encode(v);
-      }
-    } catch (e) {
+      return toBytes(v);
+    } catch (_) {
       return null;
     }
   }
@@ -134,29 +131,53 @@ class StringUtils {
   /// Converts a Dart object represented as a Map to a JSON-encoded string.
   ///
   /// The input [data] is a Map representing the Dart object.
-  static String fromJson(Object data) {
-    return jsonEncode(data);
+  static String fromJson(Object data,
+      {String? indent,
+      bool toStringEncodable = false,
+      Object? Function(dynamic)? toEncodable}) {
+    if (toStringEncodable) {
+      toEncodable ??= (c) => c.toString();
+    }
+    if (indent != null) {
+      return JsonEncoder.withIndent(indent, toEncodable).convert(data);
+    }
+    return jsonEncode(data, toEncodable: toEncodable);
   }
 
   /// Converts a JSON-encoded string to a Dart object represented as a Map.
   ///
   /// The input [data] is a JSON-encoded string.
   /// Returns a Map representing the Dart object.
-  static T toJson<T>(String data) {
-    final decode = jsonDecode(data);
+  static T toJson<T>(Object? data,
+      {Object? Function(Object?, Object?)? reviver}) {
+    if (data is! String) {
+      if (data is! T) {
+        throw ArgumentException(
+            "Invalid data encountered during JSON conversion.",
+            details: {"data": data});
+      }
+      return data;
+    }
+    final decode = jsonDecode(data, reviver: reviver);
     if (decode is! T) {
       throw ArgumentException(
           "Invalid json casting. excepted: $T got: ${decode.runtimeType}");
     }
-    return jsonDecode(data);
+    return decode;
   }
 
   /// Converts a Dart object represented as a Map to a JSON-encoded string if possible.
   ///
   /// The input [data] is a Map representing the Dart object.
-  static String? tryFromJson(Object? data) {
+  static String? tryFromJson(Object? data,
+      {String? indent,
+      bool toStringEncodable = false,
+      Object? Function(dynamic)? toEncodable}) {
     try {
-      return fromJson(data!);
+      return fromJson(data!,
+          indent: indent,
+          toStringEncodable: toStringEncodable,
+          toEncodable: toEncodable);
     } catch (e) {
       return null;
     }
@@ -166,10 +187,11 @@ class StringUtils {
   ///
   /// The input [data] is a JSON-encoded string.
   /// Returns a Map representing the Dart object.
-  static T? tryToJson<T>(String data) {
+  static T? tryToJson<T>(Object? data,
+      {Object? Function(Object?, Object?)? reviver}) {
     try {
-      return toJson(data);
-    } catch (e) {
+      return toJson<T>(data, reviver: reviver);
+    } catch (_) {
       return null;
     }
   }

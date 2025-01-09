@@ -1,23 +1,8 @@
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 /// An exception class representing an error related to Monero keys.
 ///
 /// This exception class is used to represent errors and exceptions related to Monero keys.
-class MoneroKeyError implements BlockchainUtilsException {
-  @override
-  final String message;
-
-  @override
-  final Map<String, dynamic>? details;
-
-  /// Constructs a MoneroKeyError with an optional error message.
-  ///
-  /// [message]: An optional error message describing the key-related issue.
-  const MoneroKeyError(this.message, {this.details});
-
-  /// Returns a string representation of the exception.
-  @override
-  String toString() {
-    return message;
-  }
+class MoneroKeyError extends BlockchainUtilsException {
+  const MoneroKeyError(super.message, {super.details});
 }

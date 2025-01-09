@@ -102,7 +102,6 @@ class Slip44 {
   static const int avalanche = 9000;
   static const int celo = 52752;
   static const int piNetwork = 314159;
-
-  /// Unofficial coin id
   static const int pepecoin = 3434;
+  static const int electraProtocol = 597;
 }

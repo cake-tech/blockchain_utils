@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/cbor/utils/dynamic_bytes.dart';
 import 'package:blockchain_utils/cbor/core/tags.dart';
@@ -7,9 +8,8 @@ import 'package:blockchain_utils/cbor/core/cbor.dart';
 class CborBytesValue implements CborObject {
   /// Constructor for creating a CborBytesValue instance with the provided parameters.
   /// It accepts the bytes value.
-  const CborBytesValue(this.value);
+  CborBytesValue(List<int> value) : value = value.asImmutableBytes;
 
-  /// The value as a List<int>.
   @override
   final List<int> value;
 
@@ -19,7 +19,7 @@ class CborBytesValue implements CborObject {
     final bytes = CborBytesTracker();
     bytes.pushInt(MajorTags.byteString, value.length);
     bytes.pushBytes(value);
-    return bytes.toBytes();
+    return bytes.buffer();
   }
 
   /// Encode the value into CBOR bytes an then to hex
@@ -39,17 +39,24 @@ class CborBytesValue implements CborObject {
   /// ovveride hash code
   @override
   int get hashCode => value.hashCode;
+
+  @override
+  String toString() {
+    return BytesUtils.toHexString(value);
+  }
 }
 
 /// A class representing a CBOR (Concise Binary Object Representation) bytes value with indefinite tag.
 class CborDynamicBytesValue implements CborObject {
   /// Constructor for creating a CborDynamicBytesValue instance with the provided parameters.
   /// It accepts the bytes value.
-  const CborDynamicBytesValue(this.value);
+  CborDynamicBytesValue(List<List<int>> value)
+      : value = value.map((e) => e.asImmutableBytes).toList().immutable;
 
-  /// The value as a List<List<int>>.
   @override
   final List<List<int>> value;
+  // @override
+  // List<List<int>> get value => _value;
 
   /// Encode the value into CBOR bytes
   @override
@@ -61,7 +68,7 @@ class CborDynamicBytesValue implements CborObject {
       bytes.pushBytes(v);
     }
     bytes.breakDynamic();
-    return bytes.toBytes();
+    return bytes.buffer();
   }
 
   /// Returns the string representation of the value.
@@ -81,7 +88,7 @@ class CborDynamicBytesValue implements CborObject {
   operator ==(other) {
     if (other is! CborDynamicBytesValue) return false;
 
-    return value == other.value;
+    return CompareUtils.iterableIsEqual(value, other.value);
   }
 
   /// ovveride hash code

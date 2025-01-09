@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/cbor/utils/dynamic_bytes.dart';
 import 'package:blockchain_utils/cbor/core/cbor.dart';
@@ -6,23 +7,24 @@ import 'package:blockchain_utils/cbor/core/cbor.dart';
 class CborTagValue<T> implements CborObject {
   /// Constructor for creating a CborBoleanValue instance with the provided parameters.
   /// It accepts the all encodable cbor value.
-  CborTagValue(this.value, List<int> tags)
-      : tags = List<int>.unmodifiable(tags);
+  CborTagValue(T value, List<int> tags)
+      : _value = value,
+        tags = tags.immutable;
 
   final List<int> tags;
 
-  /// The value as a T.
+  final T _value;
   @override
-  final T value;
+  T get value => _value;
 
   /// Encode the value into CBOR bytes
   @override
   List<int> encode() {
     final bytes = CborBytesTracker();
     bytes.pushTags(tags);
-    final obj = CborObject.fromDynamic(value).encode();
+    final obj = CborObject.fromDynamic(_value).encode();
     bytes.pushBytes(obj);
-    return bytes.toBytes();
+    return bytes.buffer();
   }
 
   /// Encode the value into CBOR bytes an then to hex

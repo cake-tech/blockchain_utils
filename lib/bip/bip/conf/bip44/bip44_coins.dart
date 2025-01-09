@@ -141,6 +141,19 @@ class Bip44Coins extends BipCoins {
   /// Cosmos
   static const cosmosTestnetNist256p1 = Bip44Coins._('cosmosTestnetNist256p1');
 
+  /// Cosmos
+  static const cosmosEd25519 = Bip44Coins._('cosmosEd25519');
+
+  /// Cosmos
+  static const cosmosTestnetEd25519 = Bip44Coins._('cosmosTestnetEd25519');
+
+  /// Cosmos
+  static const cosmosEthSecp256k1 = Bip44Coins._('cosmosEthSecp256k1');
+
+  /// Cosmos
+  static const cosmosTestnetEthSecp256k1 =
+      Bip44Coins._('cosmosTestnetEthSecp256k1');
+
   /// Dash
   static const dash = Bip44Coins._('dash');
 
@@ -284,6 +297,9 @@ class Bip44Coins extends BipCoins {
   /// Stellar
   static const stellar = Bip44Coins._('stellar');
 
+  /// Stellar testnet
+  static const stellarTestnet = Bip44Coins._('stellarTestnet');
+
   /// Terra
   static const terra = Bip44Coins._('terra');
 
@@ -310,6 +326,9 @@ class Bip44Coins extends BipCoins {
 
   /// Zilliqa
   static const zilliqa = Bip44Coins._('zilliqa');
+
+  /// Electra Protocol
+  static const electraProtocol = Bip44Coins._('electraProtocol');
 
   // Test nets
 
@@ -351,6 +370,9 @@ class Bip44Coins extends BipCoins {
 
   /// Ton Testnet
   static const tonMainnet = Bip44Coins._('tonMainnet');
+
+  /// Electra Protocol Testnet
+  static const electraProtocolTestnet = Bip44Coins._('electraProtocolTestnet');
 
   // Fields and methods
 
@@ -409,6 +431,10 @@ class Bip44Coins extends BipCoins {
     Bip44Coins.cosmosTestnet: Bip44Conf.cosmosTestnet,
     Bip44Coins.cosmosNist256p1: Bip44Conf.cosmosNist256p1,
     Bip44Coins.cosmosTestnetNist256p1: Bip44Conf.cosmosTestnetNist256p1,
+    Bip44Coins.cosmosEd25519: Bip44Conf.cosmosEd25519,
+    Bip44Coins.cosmosTestnetEd25519: Bip44Conf.cosmosTestnetEd25519,
+    Bip44Coins.cosmosEthSecp256k1: Bip44Conf.cosmosEthSecp256k1,
+    Bip44Coins.cosmosTestnetEthSecp256k1: Bip44Conf.cosmosTestnetEthSecp256k1,
     Bip44Coins.dash: Bip44Conf.dashMainNet,
     Bip44Coins.dashTestnet: Bip44Conf.dashTestNet,
     Bip44Coins.dogecoin: Bip44Conf.dogecoinMainNet,
@@ -462,6 +488,7 @@ class Bip44Coins extends BipCoins {
     Bip44Coins.solana: Bip44Conf.solana,
     Bip44Coins.solanaTestnet: Bip44Conf.solanaTestnet,
     Bip44Coins.stellar: Bip44Conf.stellar,
+    Bip44Coins.stellarTestnet: Bip44Conf.stellarTestnet,
     Bip44Coins.terra: Bip44Conf.terra,
     Bip44Coins.tezos: Bip44Conf.tezos,
     Bip44Coins.theta: Bip44Conf.theta,
@@ -474,6 +501,8 @@ class Bip44Coins extends BipCoins {
     Bip44Coins.zilliqa: Bip44Conf.zilliqa,
     Bip44Coins.tonTestnet: Bip44Conf.tonTestnet,
     Bip44Coins.tonMainnet: Bip44Conf.tonMainnet,
+    Bip44Coins.electraProtocol: Bip44Conf.electraProtocolMainNet,
+    Bip44Coins.electraProtocolTestnet: Bip44Conf.electraProtocolTestNet,
   };
   @override
   BipProposal get proposal => BipProposal.bip44;

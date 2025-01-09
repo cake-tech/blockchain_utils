@@ -6,11 +6,9 @@ import 'package:blockchain_utils/crypto/crypto/cdsa/curve/curves.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/ristretto_point.dart';
 import 'package:blockchain_utils/crypto/crypto/hash/hash.dart';
 import 'package:blockchain_utils/crypto/crypto/prng/fortuna.dart';
-import 'package:blockchain_utils/crypto/crypto/cdsa/utils/ristretto_utils.dart'
-    as ristretto_tools;
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/merlin/transcript.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 /// The `SchnorrkelKeyCost` class defines various constants related to the sizes and lengths of Schnorrkel keys and components.
 ///
@@ -63,10 +61,10 @@ class _KeyUtils {
   /// Returns:
   /// A new byte array with the scalar divided by the cofactor.
   static List<int> divideScalarByCofactor(List<int> s) {
-    int l = s.length - 1;
+    final int l = s.length - 1;
     int low = 0;
     for (int i = 0; i < s.length; i++) {
-      int r = s[l - i] & 0x07; // remainder
+      final int r = s[l - i] & 0x07; // remainder
       s[l - i] >>= 3;
       s[l - i] += low;
       low = r << 5;
@@ -82,7 +80,7 @@ class _KeyUtils {
   static void multiplyScalarBytesByCofactor(List<int> scalar) {
     int high = 0;
     for (int i = 0; i < scalar.length; i++) {
-      int r = scalar[i] & 0xE0; // carry bits (0xE0 is binary 11100000)
+      final int r = scalar[i] & 0xE0; // carry bits (0xE0 is binary 11100000)
       scalar[i] <<= 3; // multiply by 8
       scalar[i] += high;
       high = r >> 5;
@@ -104,8 +102,8 @@ class _KeyUtils {
   static List<int>? toCanonical(List<int> bytes) {
     final cloneBytes = List<int>.from(bytes);
     cloneBytes[31] &= 127;
-    bool highBitUnset = (bytes[31] >> 7 & 0) == 0;
-    bool isCanonical = BytesUtils.bytesEqual(
+    final bool highBitUnset = (bytes[31] >> 7 & 0) == 0;
+    final bool isCanonical = BytesUtils.bytesEqual(
         cloneBytes, Ed25519Utils.scalarReduce(cloneBytes));
     if (highBitUnset && isCanonical) {
       return cloneBytes;
@@ -532,7 +530,7 @@ class SchnorrkelSecretKey {
     if (nonce.length != 32) {
       throw const ArgumentException("invalid random bytes length");
     }
-    final newKey = ristretto_tools.add(key(), derivePub.item1);
+    final newKey = Ed25519Utils.add(key(), derivePub.item1);
     final combine = List<int>.from([...newKey, ...nonce]);
     return Tuple(SchnorrkelSecretKey.fromBytes(combine), derivePub.item2);
   }
@@ -578,8 +576,8 @@ class SchnorrkelSecretKey {
     signingContextScript.additionalData("sign:R".codeUnits, r.toBytes());
     final k =
         signingContextScript.toBytesWithReduceScalar("sign:c".codeUnits, 64);
-    final km = ristretto_tools.mul(key(), k);
-    final s = ristretto_tools.add(km, nonceBytes);
+    final km = Ed25519Utils.mul(key(), k);
+    final s = Ed25519Utils.add(km, nonceBytes);
     final sig = SchnorrkelSignature._(s, r.toBytes());
     return sig;
   }
@@ -670,11 +668,20 @@ class SchnorrkelSecretKey {
     }
     script.additionalData("vrf:h^sk".codeUnits, out.output);
     final c = script.toBytesWithReduceScalar("prove".codeUnits, 64);
-    final multiply = ristretto_tools.mul(c, key());
-    final s = ristretto_tools.sub(n, multiply);
+    final multiply = Ed25519Utils.mul(c, key());
+    final s = Ed25519Utils.sub(n, multiply);
 
     return VRFProof._(c, s);
   }
+
+  @override
+  operator ==(other) {
+    if (other is! SchnorrkelSecretKey) return false;
+    return BytesUtils.bytesEqual(_key, other._key);
+  }
+
+  @override
+  int get hashCode => _key.fold<int>(0, (c, p) => p ^ c).hashCode;
 }
 
 /// Represents a Schnorrkel public key used for verifying signatures.
@@ -949,6 +956,15 @@ class SchnorrkelPublicKey {
         RistrettoPoint.fromUniform(script.toBytes("VRFHash".codeUnits, 64));
     return hashPoint;
   }
+
+  @override
+  operator ==(other) {
+    if (other is! SchnorrkelPublicKey) return false;
+    return BytesUtils.bytesEqual(_publicKey, other._publicKey);
+  }
+
+  @override
+  int get hashCode => _publicKey.fold<int>(0, (c, p) => p ^ c).hashCode;
 }
 
 /// Represents a Schnorrkel key pair, consisting of a secret key and a public key.

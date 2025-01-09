@@ -4,7 +4,8 @@ import 'package:blockchain_utils/bip/algorand/mnemonic/algorand_mnemonic_utils.d
 import 'package:blockchain_utils/bip/bip/bip39/bip39_mnemonic_utils.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic_encoder_base.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 
 /// Algorand mnemonic encoder class.
 ///
@@ -21,6 +22,7 @@ class AlgorandMnemonicEncoder extends MnemonicEncoderBase {
   /// Encode bytes to a mnemonic phrase following the Algorand standard.
   @override
   Mnemonic encode(List<int> entropyBytes) {
+    entropyBytes = entropyBytes.asImmutableBytes;
     final entropyByteLen = entropyBytes.length;
     if (!AlgorandEntropyGenerator.isValidEntropyByteLen(entropyByteLen)) {
       throw ArgumentException(
@@ -37,6 +39,6 @@ class AlgorandMnemonicEncoder extends MnemonicEncoderBase {
 
   /// find words at index
   List<String> _indexesToWords(List<int> indexes) {
-    return [for (var idx in indexes) wordsList.getWordAtIdx(idx)];
+    return [for (final idx in indexes) wordsList.getWordAtIdx(idx)];
   }
 }

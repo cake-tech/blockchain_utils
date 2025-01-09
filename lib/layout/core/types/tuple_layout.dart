@@ -16,12 +16,14 @@ class TupleLayout extends Layout<List> {
 
   @override
   LayoutDecodeResult<List> decode(LayoutByteReader bytes, {int offset = 0}) {
-    List encoded = [];
+    final List encoded = [];
     int pos = offset;
     for (final i in layouts) {
       final decode = i.decode(bytes, offset: pos);
       encoded.add(decode.value);
-      pos += i.getSpan(bytes, offset: pos);
+      final lSpan = i.getSpan(bytes, offset: pos, source: decode.value);
+      assert(lSpan >= 0, "span cannot be negative.");
+      pos += lSpan;
     }
     return LayoutDecodeResult(consumed: pos - offset, value: encoded);
   }
@@ -40,10 +42,14 @@ class TupleLayout extends Layout<List> {
   }
 
   @override
-  int getSpan(LayoutByteReader? bytes, {int offset = 0}) {
+  int getSpan(LayoutByteReader? bytes, {int offset = 0, List? source}) {
     int span = 0;
-    for (final i in layouts) {
-      span += i.getSpan(bytes, offset: offset + span);
+    for (int i = 0; i < layouts.length; i++) {
+      final layout = layouts[i];
+      final lSpan =
+          layout.getSpan(bytes, offset: offset + span, source: source?[i]);
+      assert(lSpan >= 0, "span cannot be negative.");
+      span += lSpan;
     }
     return span;
   }
@@ -72,11 +78,15 @@ class TupleCompactLayout extends Layout<List> {
       throw LayoutException("Source length must match layout length.",
           details: {"property": property});
     }
-    List encoded = [];
+    final List encoded = [];
     int pos = decodeLength.item1 + offset;
-    for (final i in layouts) {
-      encoded.add(i.decode(bytes, offset: pos));
-      pos += i.getSpan(bytes, offset: pos);
+    for (int i = 0; i < layouts.length; i++) {
+      final layout = layouts[i];
+      final decode = layout.decode(bytes, offset: pos);
+      encoded.add(decode);
+      final lSpan = layout.getSpan(bytes, offset: pos, source: decode);
+      assert(lSpan >= 0, "span cannot be negative.");
+      pos += lSpan;
     }
     return LayoutDecodeResult(consumed: pos - offset, value: encoded);
   }
@@ -97,11 +107,15 @@ class TupleCompactLayout extends Layout<List> {
   }
 
   @override
-  int getSpan(LayoutByteReader? bytes, {int offset = 0}) {
+  int getSpan(LayoutByteReader? bytes, {int offset = 0, List? source}) {
     final decodeLength = bytes!.getCompactLengthInfos(offset);
     int span = decodeLength.item1;
-    for (final i in layouts) {
-      span += i.getSpan(bytes, offset: offset + span);
+    for (int i = 0; i < layouts.length; i++) {
+      final layout = layouts[i];
+      final lSpan =
+          layout.getSpan(bytes, offset: offset + span, source: source?[i]);
+      assert(lSpan >= 0, "span cannot be negative.");
+      span += lSpan;
     }
     return span;
   }

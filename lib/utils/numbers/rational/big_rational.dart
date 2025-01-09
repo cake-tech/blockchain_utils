@@ -1,5 +1,9 @@
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/numbers/utils/bigint_utils.dart';
+
+class _BigRationalConst {
+  static const int maxScale = 20;
+}
 
 /// Represents a rational number with arbitrary precision using BigInt for the numerator and denominator.
 class BigRational {
@@ -107,7 +111,7 @@ class BigRational {
       throw const ArgumentException("Invalid input: too many '.' tokens");
     }
     if (parts.length > 1) {
-      bool isNegative = parts[0][0] == '-';
+      final bool isNegative = parts[0][0] == '-';
       if (isNegative) parts[0] = parts[0].substring(1);
       BigRational intPart = BigRational._(BigInt.parse(parts[0]), _one);
       final int length = parts[1].length;
@@ -235,8 +239,8 @@ class BigRational {
   /// [other] The divisor BigRational.
   /// Returns a new BigRational representing the integer division of this BigRational by the given BigRational.
   BigRational operator ~/(BigRational other) {
-    BigInt divmod = _truncate;
-    BigInt rminder = _remainder;
+    final BigInt divmod = _truncate;
+    final BigInt rminder = _remainder;
     BigInt floor;
 
     if (rminder == _zero || !divmod.isNegative) {
@@ -245,6 +249,26 @@ class BigRational {
       floor = divmod - _one;
     }
     return BigRational._(floor, _one);
+  }
+
+  /// Returns the floor of the BigRational as a BigRational with denominator 1
+  BigRational floor() {
+    BigInt flooredNumerator;
+
+    if (numerator.isNegative && denominator.isNegative) {
+      // Both numerator and denominator are negative: treat as positive
+      flooredNumerator = numerator.abs() ~/ denominator.abs();
+    } else if (numerator.isNegative || denominator.isNegative) {
+      // One of them is negative: result will be negative
+      flooredNumerator =
+          (numerator.abs() ~/ denominator.abs()) * BigInt.from(-1) - BigInt.one;
+    } else {
+      // Both are positive: simple integer division
+      flooredNumerator = numerator ~/ denominator;
+    }
+
+    // Return the floored value as a BigRational with denominator 1
+    return BigRational(flooredNumerator, denominator: BigInt.one);
   }
 
   /// Rounds this BigRational towards zero and returns the result as a BigRational.
@@ -269,8 +293,8 @@ class BigRational {
   ///
   /// Returns a new BigRational representing the ceiling of this BigRational.
   BigRational ceil(toBigInt) {
-    BigInt divmod = _truncate;
-    BigInt remind = _remainder;
+    final BigInt divmod = _truncate;
+    final BigInt remind = _remainder;
     BigInt ceil;
 
     if (remind == _zero || divmod.isNegative) {
@@ -331,7 +355,6 @@ class BigRational {
     if (denom.isNegative) {
       return BigRational._(-num, -denom);
     }
-
     return BigRational._(num, denom);
   }
 
@@ -362,7 +385,7 @@ class BigRational {
   /// [digits] The number of digits after the decimal point (default is the scale of the BigRational).
   /// Returns a string representing the decimal value, with the specified number of digits after the decimal point.
   String toDecimal({int? digits}) {
-    if (_inDecimal != null) {
+    if (digits == null && _inDecimal != null) {
       return _inDecimal!;
     }
     digits ??= scale;
@@ -423,6 +446,7 @@ class BigRational {
     while (r.denominator != BigInt.one) {
       scale++;
       r *= ten;
+      if (scale >= _BigRationalConst.maxScale) break;
     }
     return scale;
   }

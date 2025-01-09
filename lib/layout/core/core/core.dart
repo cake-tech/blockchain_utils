@@ -49,6 +49,65 @@ The 3-Clause BSD License
 import 'package:blockchain_utils/layout/byte/byte_handler.dart';
 import 'package:blockchain_utils/layout/exception/exception.dart';
 
+typedef LayoutFunc<T> = Layout<T> Function({String? property});
+
+enum LayoutAction { span, encode, decode }
+
+typedef ConditionalLayoutFunc<T> = Layout<T> Function(
+    {String? property,
+    required T? sourceOrResult,
+    required LayoutAction action,
+    required int remindBytes});
+
+abstract class BaseLazyLayout<T> {
+  abstract final String? property;
+  Layout<T> layout(
+      {required LayoutAction action,
+      required T? sourceOrResult,
+      required int remindBytes});
+}
+
+class LazyLayout<T> extends BaseLazyLayout<T> {
+  final LayoutFunc<T> _layout;
+  // final ConditionalLayoutFunc<T> layout;
+  @override
+  final String? property;
+  LazyLayout({
+    required LayoutFunc<T> layout,
+    required this.property,
+  }) : _layout = layout;
+  @override
+  Layout<T> layout(
+      {required LayoutAction action,
+      required T? sourceOrResult,
+      required int remindBytes}) {
+    return _layout(property: property);
+  }
+}
+
+class ConditionalLazyLayout<T> extends BaseLazyLayout<T> {
+  final ConditionalLayoutFunc<T> _layout;
+  @override
+  final String? property;
+  ConditionalLazyLayout(
+      {required ConditionalLayoutFunc<T> layout, required this.property})
+      : _layout = layout;
+
+  @override
+  Layout<T> layout(
+      {required LayoutAction action,
+      required T? sourceOrResult,
+      required int remindBytes}) {
+    assert(action == LayoutAction.span || sourceOrResult != null,
+        "source cannot be null in ${action.name}");
+    return _layout(
+        property: property,
+        action: action,
+        sourceOrResult: sourceOrResult,
+        remindBytes: remindBytes);
+  }
+}
+
 /// Base class for layout objects.
 ///
 /// **NOTE:** This is an abstract base class; you can create instances if it amuses you,
@@ -64,7 +123,7 @@ abstract class Layout<T> {
 
   LayoutDecodeResult<T> decode(LayoutByteReader bytes, {int offset = 0});
   int encode(T source, LayoutByteWriter writer, {int offset = 0});
-  int getSpan(LayoutByteReader? bytes, {int offset = 0}) {
+  int getSpan(LayoutByteReader? bytes, {int offset = 0, T? source}) {
     if (span < 0) {
       throw LayoutException("Invalid layout span.",
           details: {"property": property, "span": span});

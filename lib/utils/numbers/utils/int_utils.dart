@@ -3,7 +3,8 @@ import 'package:blockchain_utils/utils/binary/binary_operation.dart';
 import 'package:blockchain_utils/utils/numbers/utils/bigint_utils.dart';
 import 'package:blockchain_utils/utils/string/string.dart';
 import 'package:blockchain_utils/utils/tuple/tuple.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
+import 'dart:math' as math;
 
 /// Utility class for integer-related operations and conversions.
 class IntUtils {
@@ -19,7 +20,7 @@ class IntUtils {
   ///
   /// Throws a MessageException if the decoded value cannot fit into an integer in the current environment.
   static Tuple<int, int> decodeVarint(List<int> byteint) {
-    int ni = byteint[0];
+    final int ni = byteint[0];
     int size = 0;
 
     if (ni < 253) {
@@ -34,7 +35,7 @@ class IntUtils {
       size = 8;
     }
 
-    BigInt value = BigintUtils.fromBytes(byteint.sublist(1, 1 + size),
+    final BigInt value = BigintUtils.fromBytes(byteint.sublist(1, 1 + size),
         byteOrder: Endian.little);
     if (!value.isValidInt) {
       throw const MessageException(
@@ -99,14 +100,11 @@ class IntUtils {
   /// whether the most significant bytes are at the beginning (big-endian) or end
   /// (little-endian) of the resulting byte list.
   static List<int> toBytes(int val,
-      {required int length,
-      Endian byteOrder = Endian.big,
-      int maxBytesLength = 6}) {
-    assert(maxBytesLength > 0 && maxBytesLength <= 8);
-    assert(length <= maxBytesLength);
+      {required int length, Endian byteOrder = Endian.big}) {
+    assert(length <= 8);
     if (length > 4) {
-      int lowerPart = val & mask32;
-      int upperPart = (val >> 32) & mask32;
+      final int lowerPart = val & mask32;
+      final int upperPart = (val >> 32) & mask32;
 
       final bytes = [
         ...toBytes(upperPart, length: length - 4),
@@ -117,7 +115,7 @@ class IntUtils {
       }
       return bytes;
     }
-    List<int> byteList = List<int>.filled(length, 0);
+    final List<int> byteList = List<int>.filled(length, 0);
 
     for (var i = 0; i < length; i++) {
       byteList[length - i - 1] = val & mask8;
@@ -137,16 +135,16 @@ class IntUtils {
   /// [byteOrder] The byte order, defaults to Endian.big.
   /// Returns the corresponding integer value.
   static int fromBytes(List<int> bytes,
-      {Endian byteOrder = Endian.big, bool sign = false, int maxBytes = 6}) {
-    assert(maxBytes > 0 && maxBytes <= 8);
-    assert(bytes.length <= maxBytes);
+      {Endian byteOrder = Endian.big, bool sign = false}) {
+    assert(bytes.length <= 8);
     if (byteOrder == Endian.little) {
       bytes = List<int>.from(bytes.reversed.toList());
     }
     int result = 0;
     if (bytes.length > 4) {
-      int lowerPart = fromBytes(bytes.sublist(bytes.length - 4, bytes.length));
-      int upperPart = fromBytes(bytes.sublist(0, bytes.length - 4));
+      final int lowerPart =
+          fromBytes(bytes.sublist(bytes.length - 4, bytes.length));
+      final int upperPart = fromBytes(bytes.sublist(0, bytes.length - 4));
       result = (upperPart << 32) | lowerPart;
     } else {
       for (var i = 0; i < bytes.length; i++) {
@@ -164,7 +162,7 @@ class IntUtils {
   /// Parses a dynamic value [v] into an integer.
   ///
   /// Tries to convert the dynamic value [v] into an integer. It supports parsing
-  /// from int, BigInt, List<int>, and String types. If [v] is a String and
+  /// from int, BigInt, `List<int>`, and String types. If [v] is a String and
   /// represents a hexadecimal number (prefixed with '0x' or not), it is parsed
   /// accordingly.
   ///
@@ -188,8 +186,7 @@ class IntUtils {
         }
         return parse!;
       }
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (_) {}
     throw const ArgumentException("invalid input for parse int");
   }
 
@@ -212,5 +209,21 @@ class IntUtils {
     } on ArgumentException {
       return null;
     }
+  }
+
+  static double sqrt(num x) => math.sqrt(x);
+  static double log(num x) => math.log(x);
+  static double cos(num x) => math.cos(x);
+  static double exp(num x) => math.exp(x);
+  static num pow(num x, num exponent) => math.pow(x, exponent);
+  static double get pi => math.pi;
+  static int max(int a, int b) {
+    if (a > b) return a;
+    return b;
+  }
+
+  static int min(int a, int b) {
+    if (a > b) return b;
+    return a;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
+import 'package:blockchain_utils/cbor/exception/exception.dart';
 import 'package:blockchain_utils/cbor/utils/dynamic_bytes.dart';
 import 'package:blockchain_utils/cbor/core/tags.dart';
 import 'package:blockchain_utils/utils/utils.dart';
@@ -19,8 +20,17 @@ class CborIntValue implements CborNumeric {
   @override
   List<int> encode() {
     final bytes = CborBytesTracker();
-    bytes.pushInt(value.isNegative ? MajorTags.negInt : MajorTags.posInt,
-        value.isNegative ? ~value : value);
+    if (value.bitLength > 31 && value.isNegative) {
+      final value = (~BigInt.parse(this.value.toString()));
+      if (!value.isValidInt) {
+        throw CborException("Value is to large for encoding as CborInteger",
+            details: {"value": this.value.toString()});
+      }
+      bytes.pushInt(MajorTags.negInt, value.toInt());
+    } else {
+      bytes.pushInt(value.isNegative ? MajorTags.negInt : MajorTags.posInt,
+          value.isNegative ? ~value : value);
+    }
     return bytes.toBytes();
   }
 

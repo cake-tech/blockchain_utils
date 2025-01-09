@@ -1,23 +1,12 @@
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 /// An exception class for errors related to square root calculations.
 ///
 /// This exception is thrown when there is an issue with computing the square root
 /// of a BigInt value within the defined constraints.
 ///
-class SquareRootError implements BlockchainUtilsException {
-  @override
-  final String message;
-
-  @override
-  final Map<String, dynamic>? details;
-
-  const SquareRootError(this.message, {this.details});
-
-  @override
-  String toString() {
-    return message;
-  }
+class SquareRootError extends BlockchainUtilsException {
+  const SquareRootError(super.message, {super.details});
 }
 
 /// An exception class for errors related to Jacobi symbol calculations.
@@ -25,17 +14,6 @@ class SquareRootError implements BlockchainUtilsException {
 /// This exception is thrown when there is an issue with computing the Jacobi symbol
 /// for a pair of BigInt values within the defined constraints.
 ///
-class JacobiError implements BlockchainUtilsException {
-  @override
-  final String message;
-
-  @override
-  final Map<String, dynamic>? details;
-
-  const JacobiError(this.message, {this.details});
-
-  @override
-  String toString() {
-    return message;
-  }
+class JacobiError extends BlockchainUtilsException {
+  const JacobiError(super.message, {super.details});
 }

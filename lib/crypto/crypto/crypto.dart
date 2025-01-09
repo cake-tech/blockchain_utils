@@ -1,6 +1,6 @@
 /// The 'crypto' library provides a collection of cryptographic algorithms and utilities
 /// for various cryptographic operations and security functions.
-library crypto;
+library;
 
 /// Export statement for AEAD (Authenticated Encryption with Associated Data) components.
 export 'aead/aead.dart';
@@ -49,6 +49,7 @@ export 'poly1305/poly1305.dart';
 
 /// Export statement for the Fortuna cryptographic pseudorandom number generator (PRNG).
 export 'prng/fortuna.dart';
+export 'prng/gamma.dart';
 
 /// Export statement for the 'schnorrkel' library, which provides tools for working with the
 /// Schnorrkel digital signature scheme, including key management, cryptographic functions,

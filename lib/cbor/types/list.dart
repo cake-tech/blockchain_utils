@@ -15,7 +15,6 @@ class CborListValue<T> implements CborObject {
   /// this method encode values with indefinite tag.
   CborListValue.dynamicLength(this.value) : _isFixedLength = false;
 
-  /// value as List
   @override
   final List<T> value;
 

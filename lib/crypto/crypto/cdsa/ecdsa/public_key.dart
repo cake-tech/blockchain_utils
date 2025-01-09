@@ -2,7 +2,7 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/ecdsa/signature.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/base.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/point/ec_projective_point.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 
 /// Represents an ECDSA (Elliptic Curve Digital Signature Algorithm) public key.
 class ECDSAPublicKey {
@@ -24,10 +24,8 @@ class ECDSAPublicKey {
     final n = generator.order;
     final p = curve.p;
 
-    if (!(BigInt.zero <= point.x && point.x < p) ||
-        !(BigInt.zero <= point.y && point.y < p)) {
-      throw const ArgumentException(
-          "The public point has x or y out of range.");
+    if (!(BigInt.zero <= point.x && point.x < p) || !(BigInt.zero <= point.y && point.y < p)) {
+      throw const ArgumentException("The public point has x or y out of range.");
     }
 
     if (verify && !curve.containsPoint(point.x, point.y)) {
@@ -42,14 +40,6 @@ class ECDSAPublicKey {
       throw const ArgumentException("Generator point order is bad.");
     }
     return ECDSAPublicKey._(generator, point);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (other is ECDSAPublicKey) {
-      return generator.curve == other.generator.curve && point == other.point;
-    }
-    return false;
   }
 
   /// Verifies an ECDSA signature against a hash value.
@@ -85,10 +75,19 @@ class ECDSAPublicKey {
     return v == r;
   }
 
-  @override
-  int get hashCode => generator.hashCode ^ point.hashCode;
-
   List<int> toBytes([EncodeType encodeType = EncodeType.compressed]) {
     return point.toBytes(encodeType);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is ECDSAPublicKey) {
+      if (identical(this, other)) return true;
+      return generator.curve == other.generator.curve && point == other.point;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => HashCodeGenerator.generateHashCode([generator.curve, point]);
 }

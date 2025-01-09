@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/cbor/utils/dynamic_bytes.dart';
 import 'package:blockchain_utils/cbor/core/tags.dart';
@@ -39,7 +40,7 @@ class CborStringValue extends CborString {
     final toBytes = StringUtils.encode(value);
     bytes.pushInt(MajorTags.utf8String, toBytes.length);
     bytes.pushBytes(toBytes);
-    return bytes.toBytes();
+    return bytes.buffer();
   }
 
   /// override equal operation
@@ -52,15 +53,19 @@ class CborStringValue extends CborString {
   /// override hashcode
   @override
   int get hashCode => value.hashCode;
+
+  @override
+  String toString() {
+    return value;
+  }
 }
 
 /// A class representing a CBOR (Concise Binary Object Representation) string value with indefinite tag length.
 class CborIndefiniteStringValue extends CborString {
   /// Constructor for creating a CborStringValue instance with the provided parameters.
-  /// It accepts a List<String> value.
-  CborIndefiniteStringValue(this.value);
+  /// It accepts a `List<String>` value.
+  CborIndefiniteStringValue(List<String> value) : value = value.immutable;
 
-  /// value as List<String>
   @override
   final List<String> value;
 

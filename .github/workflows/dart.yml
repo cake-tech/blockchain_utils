@@ -7,9 +7,9 @@ name: Dart
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","dart_v2_final" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main","dart_v2_final" ]
 
 jobs:
   build:
@@ -40,3 +40,7 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: dart test ./test
+      - name: Run tests Web
+        run: dart test ./test -p chrome --timeout=240s
+
+

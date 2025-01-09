@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/address/addr_dec_utils.dart';
 import 'package:blockchain_utils/bip/address/decoder.dart';
 import 'package:blockchain_utils/bip/address/encoder.dart';
-import 'package:blockchain_utils/bip/coin_conf/coins_conf.dart';
+import 'package:blockchain_utils/bip/coin_conf/constant/coins_conf.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
@@ -26,7 +26,7 @@ class AptosAddrDecoder implements BlockchainAddressDecoder {
   /// - `kwargs` (optional): Additional arguments, though none are used in this method.
   ///
   /// Returns:
-  /// - A List<int> containing the decoded address bytes.
+  /// - A List containing the decoded address bytes.
   ///
   /// Throws:
   /// - ArgumentException if the provided string is not a valid hex encoding.

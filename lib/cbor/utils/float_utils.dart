@@ -17,7 +17,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:blockchain_utils/cbor/core/tags.dart';
-import 'package:blockchain_utils/exception/exception.dart';
+import 'package:blockchain_utils/cbor/exception/exception.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
 // Enum representing different floating-point formats and their characteristics.
@@ -60,7 +60,7 @@ class FloatLength {
     if (index >= 0 && index < values.length) {
       return values[index];
     }
-    throw MessageException('Index out of bounds', details: {"input": index});
+    throw CborException('Index out of bounds', details: {"input": index});
   }
 }
 
@@ -192,7 +192,7 @@ class FloatUtils {
       float16View[0] = sign << 15 | 0x1F << 10 | 0x000;
     } else {
       // Normalized number
-      int newExponent = exponent - 127 + 15;
+      final int newExponent = exponent - 127 + 15;
       if (newExponent < 0) {
         // Round to zero if exponent is too small for float16
         float16View[0] = sign << 15;
@@ -242,13 +242,13 @@ class FloatUtils {
     switch (decodFloatType) {
       case FloatLength.bytes16:
         if (!isLessThan16) {
-          throw const ArgumentException("overflow bytes");
+          throw const CborException("overflow bytes");
         }
         bytes = _encodeFloat16(endianness);
         break;
       case FloatLength.bytes32:
         if (!isLessThan32) {
-          throw const ArgumentException("overflow bytes");
+          throw const CborException("overflow bytes");
         }
         bytes = _encodeFloat32(endianness);
         break;
@@ -262,16 +262,16 @@ class FloatUtils {
   /// Decode a 16-bit floating-point value from a byte array and return it as a double.
   static double floatFromBytes16(List<int> bytes) {
     if (bytes.length != 2) {
-      throw const ArgumentException(
+      throw const CborException(
           'Input byte array must be exactly 2 bytes long for Float16');
     }
 
-    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
-    int int16Bits = byteData.getInt16(0, Endian.big);
+    final ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    final int int16Bits = byteData.getInt16(0, Endian.big);
 
-    int sign = (int16Bits >> 15) & 0x1;
+    final int sign = (int16Bits >> 15) & 0x1;
     int exponent = (int16Bits >> 10) & 0x1F;
-    int fraction = int16Bits & 0x3FF;
+    final int fraction = int16Bits & 0x3FF;
 
     double value;
 
