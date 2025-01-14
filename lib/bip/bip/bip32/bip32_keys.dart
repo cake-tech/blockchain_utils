@@ -90,11 +90,22 @@ class Bip32PublicKey extends Bip32KeyBase {
     );
   }
 
+  static Bip32PublicKey fromHex(
+    String keyHex,
+    Bip32KeyData keyData,
+    Bip32KeyNetVersions keyNetVer,
+    EllipticCurveTypes curveType,
+  ) {
+    return Bip32PublicKey(
+      IPublicKey.fromHex(keyHex, curveType),
+      keyData,
+      keyNetVer,
+    );
+  }
+
   @override
-  String toHex(
-      {bool withPrefix = true, bool lowerCase = true, String? prefix = ""}) {
-    return pubKey.toHex(
-        lowerCase: lowerCase, prefix: prefix, withPrefix: withPrefix);
+  String toHex({bool withPrefix = true, bool lowerCase = true, String? prefix = ""}) {
+    return pubKey.toHex(lowerCase: lowerCase, prefix: prefix, withPrefix: withPrefix);
   }
 }
 
@@ -142,8 +153,16 @@ class Bip32PrivateKey extends Bip32KeyBase {
     Bip32KeyNetVersions keyNetVer,
     EllipticCurveTypes curveType,
   ) {
-    return Bip32PrivateKey(
-        IPrivateKey.fromBytes(keyBytes, curveType), keyData, keyNetVer);
+    return Bip32PrivateKey(IPrivateKey.fromBytes(keyBytes, curveType), keyData, keyNetVer);
+  }
+
+  static Bip32PrivateKey fromHex(
+    String keyHex,
+    Bip32KeyData keyData,
+    Bip32KeyNetVersions keyNetVer,
+    EllipticCurveTypes curveType,
+  ) {
+    return Bip32PrivateKey(IPrivateKey.fromHex(keyHex, curveType), keyData, keyNetVer);
   }
 
   @override
