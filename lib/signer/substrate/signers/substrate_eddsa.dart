@@ -1,13 +1,12 @@
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/exception/exceptions.dart';
-import 'package:blockchain_utils/signer/solana/solana_signer.dart';
+import 'package:blockchain_utils/signer/ed25519/ed25519.dart';
 import 'package:blockchain_utils/signer/substrate/core/signer.dart';
 import 'package:blockchain_utils/signer/substrate/core/verifier.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
 class _SubstrateED25519SignerConstant {
-  static final int vrfLength =
-      SolanaSignerConst.signatureLen + QuickCrypto.blake2b256DigestSize;
+  static final int vrfLength = Ed25519SignerConst.signatureLen + QuickCrypto.blake2b256DigestSize;
 }
 
 /// Class for signing Substrate transactions using either EDDSA algorithm.
@@ -16,11 +15,11 @@ class SubstrateED25519Signer implements BaseSubstrateSigner {
   const SubstrateED25519Signer._(this._signer);
 
   /// The EDDSA private key for signing.
-  final SolanaSigner _signer;
+  final Ed25519Signer _signer;
 
   /// Factory method to create an SubstrateED25519Signer instance from key bytes.
   factory SubstrateED25519Signer.fromKeyBytes(List<int> keyBytes) {
-    return SubstrateED25519Signer._(SolanaSigner.fromKeyBytes(keyBytes));
+    return SubstrateED25519Signer._(Ed25519Signer.fromKeyBytes(keyBytes));
   }
 
   /// Returns an SubstrateED25519Signer instance based on the available signing key type.
@@ -48,11 +47,10 @@ class SubstrateED25519Signer implements BaseSubstrateSigner {
       ...signature,
     ]);
     final List<int> vrfResult = [...vrf, ...signature];
-    final verify = toVerifyKey()
-        .vrfVerify(List.from(vrfResult), msg, context: context, extra: extra);
+    final verify =
+        toVerifyKey().vrfVerify(List.from(vrfResult), msg, context: context, extra: extra);
     if (!verify) {
-      throw const MessageException(
-          'The created signature does not pass verification.');
+      throw const MessageException('The created signature does not pass verification.');
     }
     return vrfResult;
   }
@@ -60,14 +58,14 @@ class SubstrateED25519Signer implements BaseSubstrateSigner {
 
 /// Class representing an Substrate ED25519 Verifier for signature verification.
 class SubstrateED25519Verifier implements BaseSubstrateVerifier {
-  final SolanaVerifier _verifier;
+  final Ed25519Verifier _verifier;
 
   /// Private constructor to create an SolanaVerifier instance.
   SubstrateED25519Verifier._(this._verifier);
 
   /// Factory method to create an SolanaVerifier instance from key bytes.
   factory SubstrateED25519Verifier.fromKeyBytes(List<int> keyBytes) {
-    final verifier = SolanaVerifier.fromKeyBytes(keyBytes);
+    final verifier = Ed25519Verifier.fromKeyBytes(keyBytes);
     return SubstrateED25519Verifier._(verifier);
   }
 
@@ -83,14 +81,12 @@ class SubstrateED25519Verifier implements BaseSubstrateVerifier {
   }
 
   @override
-  bool vrfVerify(List<int> message, List<int> vrfSign,
-      {List<int>? context, List<int>? extra}) {
+  bool vrfVerify(List<int> message, List<int> vrfSign, {List<int>? context, List<int>? extra}) {
     if (vrfSign.length != _SubstrateED25519SignerConstant.vrfLength) {
       throw ArgumentException(
-          "Invalid vrf length. excepted: ${_SubstrateED25519SignerConstant.vrfLength} got: ${vrfSign.length}");
+          "Invalid vrf length. expected: ${_SubstrateED25519SignerConstant.vrfLength} got: ${vrfSign.length}");
     }
-    final List<int> signature =
-        vrfSign.sublist(QuickCrypto.blake2b256DigestSize);
+    final List<int> signature = vrfSign.sublist(QuickCrypto.blake2b256DigestSize);
     final verifySignature = _verifier.verify(message, signature);
 
     if (verifySignature) {

@@ -35,11 +35,10 @@ class IntUtils {
       size = 8;
     }
 
-    final BigInt value = BigintUtils.fromBytes(byteint.sublist(1, 1 + size),
-        byteOrder: Endian.little);
+    final BigInt value =
+        BigintUtils.fromBytes(byteint.sublist(1, 1 + size), byteOrder: Endian.little);
     if (!value.isValidInt) {
-      throw const MessageException(
-          "cannot read variable-length in this environment");
+      throw const MessageException("cannot read variable-length in this environment");
     }
     return Tuple(value.toInt(), size + 1);
   }
@@ -99,8 +98,7 @@ class IntUtils {
   /// of the integer, ensuring minimal byte usage. The [byteOrder] determines
   /// whether the most significant bytes are at the beginning (big-endian) or end
   /// (little-endian) of the resulting byte list.
-  static List<int> toBytes(int val,
-      {required int length, Endian byteOrder = Endian.big}) {
+  static List<int> toBytes(int val, {required int length, Endian byteOrder = Endian.big}) {
     assert(length <= 8);
     if (length > 4) {
       final int lowerPart = val & mask32;
@@ -134,16 +132,14 @@ class IntUtils {
   /// [bytes] The list of bytes representing the integer value.
   /// [byteOrder] The byte order, defaults to Endian.big.
   /// Returns the corresponding integer value.
-  static int fromBytes(List<int> bytes,
-      {Endian byteOrder = Endian.big, bool sign = false}) {
+  static int fromBytes(List<int> bytes, {Endian byteOrder = Endian.big, bool sign = false}) {
     assert(bytes.length <= 8);
     if (byteOrder == Endian.little) {
       bytes = List<int>.from(bytes.reversed.toList());
     }
     int result = 0;
     if (bytes.length > 4) {
-      final int lowerPart =
-          fromBytes(bytes.sublist(bytes.length - 4, bytes.length));
+      final int lowerPart = fromBytes(bytes.sublist(bytes.length - 4, bytes.length));
       final int upperPart = fromBytes(bytes.sublist(0, bytes.length - 4));
       result = (upperPart << 32) | lowerPart;
     } else {
@@ -165,29 +161,31 @@ class IntUtils {
   /// from int, BigInt, `List<int>`, and String types. If [v] is a String and
   /// represents a hexadecimal number (prefixed with '0x' or not), it is parsed
   /// accordingly.
-  ///
+  /// allowHex: convert hexadecimal to integer
   /// Parameters:
   /// - [v]: The dynamic value to be parsed into an integer.
   ///
   /// Returns:
   /// - An integer representation of the parsed value.
   ///
-  static int parse(dynamic v) {
+  static int parse(dynamic v, {bool allowHex = true}) {
     try {
       if (v is int) return v;
-      if (v is BigInt) return v.toInt();
-      if (v is List<int>) {
-        return fromBytes(v, sign: true);
+      if (v is BigInt) {
+        if (!v.isValidInt) {
+          throw ArgumentException("value is to large for integer.", details: {"value": "$v"});
+        }
+        return v.toInt();
       }
       if (v is String) {
         int? parse = int.tryParse(v);
-        if (parse == null && StringUtils.ixHexaDecimalNumber(v)) {
+        if (parse == null && allowHex && StringUtils.ixHexaDecimalNumber(v)) {
           parse = int.parse(StringUtils.strip0x(v), radix: 16);
         }
         return parse!;
       }
     } catch (_) {}
-    throw const ArgumentException("invalid input for parse int");
+    throw ArgumentException("invalid input for parse int", details: {"value": "$v"});
   }
 
   /// Tries to parse a dynamic value [v] into an integer, returning null if parsing fails.
@@ -195,17 +193,17 @@ class IntUtils {
   /// If the input value [v] is null, directly returns null. Otherwise, attempts to
   /// parse the dynamic value [v] into an integer using the [parse] method.
   /// If successful, returns the resulting integer; otherwise, returns null.
-  ///
+  /// allowHex: convert hexadecimal to integer
   /// Parameters:
   /// - [v]: The dynamic value to be parsed into an integer.
   ///
   /// Returns:
   /// - An integer if parsing is successful; otherwise, returns null.
   ///
-  static int? tryParse(dynamic v) {
+  static int? tryParse(dynamic v, {bool allowHex = true}) {
     if (v == null) return null;
     try {
-      return parse(v);
+      return parse(v, allowHex: allowHex);
     } on ArgumentException {
       return null;
     }

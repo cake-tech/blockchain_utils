@@ -84,16 +84,11 @@ class XmrAddressType {
       XmrAddressType._(name: "Integrated", prefixes: [0x19, 0x36, 0x13]);
   static const XmrAddressType subaddress =
       XmrAddressType._(name: "Subaddress", prefixes: [0x24, 0x3F, 0x2A]);
-  static const List<XmrAddressType> values = [
-    primaryAddress,
-    integrated,
-    subaddress
-  ];
+  static const List<XmrAddressType> values = [primaryAddress, integrated, subaddress];
   static XmrAddressType fromPrefix(int? prefix) {
     return values.firstWhere(
       (e) => e.prefixes.contains(prefix),
-      orElse: () => throw AddressConverterException(
-          "Invalid monero address prefix.",
+      orElse: () => throw AddressConverterException("Invalid monero address prefix.",
           details: {"prefix": prefix}),
     );
   }
@@ -119,16 +114,14 @@ class XmrAddressDecodeResult {
       : publicViewKey = publicViewKey.asImmutableBytes,
         publicSpendKey = publicSpendKey.asImmutableBytes,
         paymentId = paymentId?.asImmutableBytes;
-  List<int> get keyBytes =>
-      List<int>.from([...publicSpendKey, ...publicViewKey]);
+  List<int> get keyBytes => List<int>.from([...publicSpendKey, ...publicViewKey]);
 }
 
 /// Class container for Monero address utility functions.
 class _XmrAddrUtils {
   /// Compute checksum in EOS format.
   static List<int> computeChecksum(List<int> payloadBytes) {
-    return QuickCrypto.keccack256Hash(payloadBytes)
-        .sublist(0, XmrAddrConst.checksumByteLen);
+    return QuickCrypto.keccack256Hash(payloadBytes).sublist(0, XmrAddrConst.checksumByteLen);
   }
 
   static XmrAddressDecodeResult decodeAddress(
@@ -137,8 +130,7 @@ class _XmrAddrUtils {
     List<int>? paymentIdBytes,
   }) {
     final addrDecBytes = Base58XmrDecoder.decode(addr);
-    final parts = AddrDecUtils.splitPartsByChecksum(
-        addrDecBytes, XmrAddrConst.checksumByteLen);
+    final parts = AddrDecUtils.splitPartsByChecksum(addrDecBytes, XmrAddrConst.checksumByteLen);
     final payloadBytes = parts.item1;
     final checksumBytes = parts.item2;
 
@@ -146,15 +138,13 @@ class _XmrAddrUtils {
     AddrDecUtils.validateChecksum(payloadBytes, checksumBytes, computeChecksum);
 
     /// Validate and remove prefix
-    final payloadBytesWithoutPrefix =
-        payloadBytes.sublist(XmrAddrConst.prefixLength);
+    final payloadBytesWithoutPrefix = payloadBytes.sublist(XmrAddrConst.prefixLength);
 
     final int netVersion = payloadBytes[0];
     if (netVerBytes != null) {
-      if (netVerBytes.length != XmrAddrConst.prefixLength ||
-          netVerBytes[0] != netVersion) {
+      if (netVerBytes.length != XmrAddrConst.prefixLength || netVerBytes[0] != netVersion) {
         throw AddressConverterException("Invalid address prefix.",
-            details: {"excepted": netVersion, "network_version": netVersion});
+            details: {"expected": netVersion, "network_version": netVersion});
       }
     }
 
@@ -167,24 +157,20 @@ class _XmrAddrUtils {
       case XmrAddressType.integrated:
 
         /// Validate length with payment ID
-        AddrDecUtils.validateBytesLength(
-            payloadBytesWithoutPrefix,
-            (Ed25519KeysConst.pubKeyByteLen * 2) +
-                XmrAddrConst.paymentIdByteLen);
+        AddrDecUtils.validateBytesLength(payloadBytesWithoutPrefix,
+            (Ed25519KeysConst.pubKeyByteLen * 2) + XmrAddrConst.paymentIdByteLen);
 
         /// Check payment ID
-        if (paymentIdBytes != null &&
-            paymentIdBytes.length != XmrAddrConst.paymentIdByteLen) {
+        if (paymentIdBytes != null && paymentIdBytes.length != XmrAddrConst.paymentIdByteLen) {
           throw const AddressConverterException('Invalid provided payment ID.');
         }
 
-        paymentBytes = payloadBytesWithoutPrefix.sublist(
-            payloadBytesWithoutPrefix.length - XmrAddrConst.paymentIdByteLen);
+        paymentBytes = payloadBytesWithoutPrefix
+            .sublist(payloadBytesWithoutPrefix.length - XmrAddrConst.paymentIdByteLen);
 
-        if (paymentIdBytes != null &&
-            !BytesUtils.bytesEqual(paymentIdBytes, paymentBytes)) {
+        if (paymentIdBytes != null && !BytesUtils.bytesEqual(paymentIdBytes, paymentBytes)) {
           throw AddressConverterException('Invalid payment ID.', details: {
-            "excepted": BytesUtils.toHexString(paymentIdBytes),
+            "expected": BytesUtils.toHexString(paymentIdBytes),
             "payment_id": BytesUtils.toHexString(paymentBytes)
           });
         }
@@ -194,7 +180,7 @@ class _XmrAddrUtils {
             payloadBytesWithoutPrefix, Ed25519KeysConst.pubKeyByteLen * 2);
         if (paymentIdBytes != null) {
           throw AddressConverterException('Invalid address type.', details: {
-            "excepted": XmrAddressType.integrated.toString(),
+            "expected": XmrAddressType.integrated.toString(),
             "type": addrType.toString()
           });
         }
@@ -202,8 +188,7 @@ class _XmrAddrUtils {
     }
 
     /// Validate public spend key
-    final pubSpendKeyBytes =
-        payloadBytesWithoutPrefix.sublist(0, Ed25519KeysConst.pubKeyByteLen);
+    final pubSpendKeyBytes = payloadBytesWithoutPrefix.sublist(0, Ed25519KeysConst.pubKeyByteLen);
     // AddrDecUtils.validatePubKey(pubSpendKeyBytes, MoneroPublicKey);
 
     // Validate public view key
@@ -217,11 +202,9 @@ class _XmrAddrUtils {
         paymentId: paymentBytes);
   }
 
-  static String encodeKey(
-      List<int> pubSkey, List<int> pubVkey, List<int> netVerBytes,
+  static String encodeKey(List<int> pubSkey, List<int> pubVkey, List<int> netVerBytes,
       {List<int>? paymentIdBytes}) {
-    if (paymentIdBytes != null &&
-        paymentIdBytes.length != XmrAddrConst.paymentIdByteLen) {
+    if (paymentIdBytes != null && paymentIdBytes.length != XmrAddrConst.paymentIdByteLen) {
       throw const AddressConverterException('Invalid payment ID length');
     }
     if (netVerBytes.length != XmrAddrConst.prefixLength) {
@@ -239,10 +222,8 @@ class _XmrAddrUtils {
             'A payment ID is required only for integrated addresses.');
       }
     }
-    final pubSpendKeyObj =
-        AddrKeyValidator.validateAndGetEd25519MoneroKey(pubSkey);
-    final pubViewKeyObj =
-        AddrKeyValidator.validateAndGetEd25519MoneroKey(pubVkey);
+    final pubSpendKeyObj = AddrKeyValidator.validateAndGetEd25519MoneroKey(pubSkey);
+    final pubViewKeyObj = AddrKeyValidator.validateAndGetEd25519MoneroKey(pubVkey);
     final payloadBytes = List<int>.unmodifiable([
       ...netVerBytes,
       ...pubSpendKeyObj.compressed,
@@ -257,10 +238,8 @@ class _XmrAddrUtils {
 
 /// Implementation of the [BlockchainAddressDecoder] for Monero (XMR) blockchain addresses.
 class XmrAddrDecoder implements BlockchainAddressDecoder {
-  XmrAddressDecodeResult decode(String addr,
-      {List<int>? netVerBytes, List<int>? paymentId}) {
-    return _XmrAddrUtils.decodeAddress(addr,
-        netVerBytes: netVerBytes, paymentIdBytes: paymentId);
+  XmrAddressDecodeResult decode(String addr, {List<int>? netVerBytes, List<int>? paymentId}) {
+    return _XmrAddrUtils.decodeAddress(addr, netVerBytes: netVerBytes, paymentIdBytes: paymentId);
   }
 
   /// Decodes a Monero (XMR) address.
@@ -293,8 +272,7 @@ class XmrAddrEncoder extends BlockchainAddressEncoder {
       required List<int> pubViewKey,
       required List<int> netVarBytes,
       List<int>? paymentId}) {
-    return _XmrAddrUtils.encodeKey(pubSpendKey, pubViewKey, netVarBytes,
-        paymentIdBytes: paymentId);
+    return _XmrAddrUtils.encodeKey(pubSpendKey, pubViewKey, netVarBytes, paymentIdBytes: paymentId);
   }
 
   /// Encodes a Monero (XMR) public key and view key as an XMR address.
@@ -315,10 +293,8 @@ class XmrAddrEncoder extends BlockchainAddressEncoder {
   String encodeKey(List<int> pubKey, [Map<String, dynamic> kwargs = const {}]) {
     final List<int> netVerBytes =
         AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "net_ver");
-    final List<int> pubVKey =
-        AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "pub_vkey");
-    return encode(
-        pubSpendKey: pubKey, pubViewKey: pubVKey, netVarBytes: netVerBytes);
+    final List<int> pubVKey = AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "pub_vkey");
+    return encode(pubSpendKey: pubKey, pubViewKey: pubVKey, netVarBytes: netVerBytes);
   }
 }
 
@@ -344,8 +320,8 @@ class XmrIntegratedAddrDecoder extends BlockchainAddressDecoder {
         AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "net_ver");
     final List<int> paymentId =
         AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "payment_id");
-    final decodeAddr = XmrAddrDecoder()
-        .decode(addr, netVerBytes: netVerBytes, paymentId: paymentId);
+    final decodeAddr =
+        XmrAddrDecoder().decode(addr, netVerBytes: netVerBytes, paymentId: paymentId);
     return decodeAddr.keyBytes;
   }
 }
@@ -372,12 +348,8 @@ class XmrIntegratedAddrEncoder implements BlockchainAddressEncoder {
         AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "net_ver");
     final List<int> paymentId =
         AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "payment_id");
-    final List<int> pubVKey =
-        AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "pub_vkey");
+    final List<int> pubVKey = AddrKeyValidator.validateAddressArgs<List<int>>(kwargs, "pub_vkey");
     return XmrAddrEncoder().encode(
-        pubSpendKey: pubKey,
-        pubViewKey: pubVKey,
-        netVarBytes: netVerBytes,
-        paymentId: paymentId);
+        pubSpendKey: pubKey, pubViewKey: pubVKey, netVarBytes: netVerBytes, paymentId: paymentId);
   }
 }

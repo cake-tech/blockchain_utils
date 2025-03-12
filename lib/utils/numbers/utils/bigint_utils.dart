@@ -127,8 +127,7 @@ class BigintUtils {
       return a.modInverse(m);
     }
 
-    BigInt lm = BigInt.one,
-        hm = BigInt.zero; // Initialize low and high quotients.
+    BigInt lm = BigInt.one, hm = BigInt.zero; // Initialize low and high quotients.
     BigInt low = a % m, high = m; // Initialize low and high remainders.
 
     while (low > BigInt.one) {
@@ -240,8 +239,7 @@ class BigintUtils {
   /// - [length]: The desired length of the resulting byte list.
   /// - [order]: The byte order to arrange the bytes in the resulting list (default is big endian).
   /// Returns: A list of bytes representing the BigInt with the specified length and byte order.
-  static List<int> toBytes(BigInt val,
-      {required int length, Endian order = Endian.big}) {
+  static List<int> toBytes(BigInt val, {required int length, Endian order = Endian.big}) {
     if (val == BigInt.zero) {
       return List.filled(length, 0);
     }
@@ -277,8 +275,7 @@ class BigintUtils {
   /// - [bytes]: The list of bytes to be converted to a BigInt.
   /// - [byteOrder]: The byte order to interpret the byte sequence (default is big endian).
   /// Returns: The BigInt representation of the input byte sequence.
-  static BigInt fromBytes(List<int> bytes,
-      {Endian byteOrder = Endian.big, bool sign = false}) {
+  static BigInt fromBytes(List<int> bytes, {Endian byteOrder = Endian.big, bool sign = false}) {
     if (byteOrder == Endian.little) {
       bytes = List<int>.from(bytes.reversed.toList());
     }
@@ -378,7 +375,7 @@ class BigintUtils {
   /// from BigInt, int, `List<int>`, and String types. If [v] is a String and
   /// represents a hexadecimal number (prefixed with '0x' or not), it is parsed
   /// accordingly.
-  ///
+  /// allowHex: convert hexadecimal to integer
   /// Parameters:
   /// - [v]: The dynamic value to be parsed into a BigInt.
   ///
@@ -388,7 +385,7 @@ class BigintUtils {
   /// Throws:
   /// - [ArgumentException] if the input value cannot be parsed into a BigInt.
   ///
-  static BigInt parse(dynamic v) {
+  static BigInt parse(dynamic v, {bool allowHex = true}) {
     try {
       if (v is BigInt) return v;
       if (v is int) return BigInt.from(v);
@@ -397,30 +394,31 @@ class BigintUtils {
       }
       if (v is String) {
         BigInt? parse = BigInt.tryParse(v);
-        if (parse == null && StringUtils.ixHexaDecimalNumber(v)) {
+        if (parse == null && allowHex && StringUtils.ixHexaDecimalNumber(v)) {
           parse = BigInt.parse(StringUtils.strip0x(v), radix: 16);
         }
         return parse!;
       }
       // ignore: empty_catches
     } catch (e) {}
-    throw const ArgumentException("invalid input for parse bigint");
+    throw ArgumentException("invalid input for parse bigint", details: {"value": "$v"});
   }
 
   /// Tries to parse a dynamic value [v] into a BigInt, returning null if parsing fails.
   ///
   /// Attempts to parse the dynamic value [v] into a BigInt using the [parse] method.
   /// If successful, returns the resulting BigInt; otherwise, returns null.
-  ///
+  /// allowHex: convert hexadecimal to integer
   /// Parameters:
   /// - [v]: The dynamic value to be parsed into a BigInt.
   ///
   /// Returns:
   /// - A BigInt if parsing is successful; otherwise, returns null.
   ///
-  static BigInt? tryParse(dynamic v) {
+  static BigInt? tryParse(dynamic v, {bool allowHex = true}) {
+    if (v == null) return null;
     try {
-      return parse(v);
+      return parse(v, allowHex: allowHex);
     } on ArgumentException {
       return null;
     }
@@ -444,8 +442,7 @@ class BigintUtils {
     for (final byte in bytes) {
       output = (output << 7) | BigInt.from(byte & 0x7F);
       if (output > maxU64) {
-        throw const MessageException(
-            "The variable size exceeds the limit for Nat Decode");
+        throw const MessageException("The variable size exceeds the limit for Nat Decode");
       }
       bytesRead++;
       if ((byte & 0x80) == 0) {

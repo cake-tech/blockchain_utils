@@ -23,14 +23,12 @@ class EcdsaSigningKey {
   /// Truncates and converts a digest into a BigInt, based on the provided [generator].
   ///
   /// Throws an [ArgumentException] if the digest length exceeds the curve's base length when [truncate] is false.
-  static BigInt _truncateAndConvertDigest(
-      List<int> digest, ProjectiveECCPoint generator,
+  static BigInt _truncateAndConvertDigest(List<int> digest, ProjectiveECCPoint generator,
       {bool truncate = false}) {
     List<int> digestBytes = List.from(digest);
     if (!truncate) {
       if (digest.length > generator.curve.baselen) {
-        throw const ArgumentException(
-            "this curve is too short for digest length");
+        throw const ArgumentException("this curve is too short for digest length");
       }
     } else {
       digestBytes = digest.sublist(0, generator.curve.baselen);
@@ -48,12 +46,8 @@ class EcdsaSigningKey {
 
   /// Signs a given digest using the private key and a specified value of 'k'.
   ECDSASignature signDigest(
-      {required List<int> digest,
-      List<int>? entropy,
-      required BigInt k,
-      bool truncate = false}) {
-    final digestInt =
-        _truncateAndConvertDigest(digest, generator, truncate: truncate);
+      {required List<int> digest, List<int>? entropy, required BigInt k, bool truncate = false}) {
+    final digestInt = _truncateAndConvertDigest(digest, generator, truncate: truncate);
     final sign = privateKey.sign(digestInt, k);
     return sign;
   }
@@ -70,8 +64,7 @@ class EcdsaSigningKey {
     ECDSASignature sig;
     int retry = 0;
     while (true) {
-      final k = RFC6979.generateK(
-          generator.order!, privateKey.secretMultiplier, hashFunc, digest,
+      final k = RFC6979.generateK(generator.order!, privateKey.secretMultiplier, hashFunc, digest,
           extraEntropy: extraEntropy, retryGn: retry);
 
       try {
@@ -102,8 +95,7 @@ class ECDSAVerifyKey {
   ///
   /// Returns true if the signature is valid for the provided digest, false otherwise.
   bool verify(ECDSASignature signature, List<int> digest) {
-    final digestNumber =
-        EcdsaSigningKey._truncateAndConvertDigest(digest, publicKey.generator);
+    final digestNumber = EcdsaSigningKey._truncateAndConvertDigest(digest, publicKey.generator);
     return publicKey.verifies(digestNumber, signature);
   }
 }

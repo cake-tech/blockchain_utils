@@ -2,7 +2,7 @@ import 'package:blockchain_utils/bip/ecc/bip_ecc.dart';
 import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/exception/exceptions.dart';
-import 'package:blockchain_utils/signer/ecdsa_signing_key.dart';
+import 'package:blockchain_utils/signer/signing_key/ecdsa_signing_key.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
 /// Constants used by the XRP signer for cryptographic operations.
@@ -50,13 +50,12 @@ class XrpSigner {
     switch (curve) {
       case EllipticCurveTypes.ed25519:
         // Create an EDDSA private key from the key bytes using the ED25519 curve.
-        final signingKey = EDDSAPrivateKey(
-            _XrpSignerConst.ed25519Generator, keyBytes, () => SHA512());
+        final signingKey =
+            EDDSAPrivateKey(_XrpSignerConst.ed25519Generator, keyBytes, () => SHA512());
         return XrpSigner._(signingKey, null);
       case EllipticCurveTypes.secp256k1:
         // Create an ECDSA private key from the key bytes using the SECP256K1 curve.
-        final signingKey =
-            ECDSAPrivateKey.fromBytes(keyBytes, _XrpSignerConst.secp256);
+        final signingKey = ECDSAPrivateKey.fromBytes(keyBytes, _XrpSignerConst.secp256);
         return XrpSigner._(null, EcdsaSigningKey(signingKey));
       default:
         // Throw an error if the curve type is not supported.
@@ -78,8 +77,7 @@ class XrpSigner {
     final verifyKey = toVerifyKey();
     final verify = verifyKey._verifyEddsa(digest, sig);
     if (!verify) {
-      throw const MessageException(
-          'The created signature does not pass verification.');
+      throw const MessageException('The created signature does not pass verification.');
     }
     return sig;
   }
@@ -96,15 +94,14 @@ class XrpSigner {
   /// returns A list of bytes representing the generated ECDSA signature.
   List<int> _signEcdsa(List<int> digest, {bool hashMessage = true}) {
     final hash = hashMessage
-        ? QuickCrypto.sha512Hash(digest)
-            .sublist(0, _XrpSignerConst.digestLength)
+        ? QuickCrypto.sha512Hash(digest).sublist(0, _XrpSignerConst.digestLength)
         : digest;
     if (hash.length != _XrpSignerConst.digestLength) {
       throw ArgumentException(
           "invalid digest. digest length must be ${_XrpSignerConst.digestLength} got ${digest.length}");
     }
-    final ECDSASignature ecdsaSign = _ecdsaSigningKey!
-        .signDigestDeterminstic(digest: hash, hashFunc: () => SHA256());
+    final ECDSASignature ecdsaSign =
+        _ecdsaSigningKey!.signDigestDeterminstic(digest: hash, hashFunc: () => SHA256());
     BigInt s = ecdsaSign.s;
     if (ecdsaSign.s > _XrpSignerConst.orderHalf) {
       s = _XrpSignerConst.curveOrder - s;
@@ -113,8 +110,7 @@ class XrpSigner {
     final vr = toVerifyKey();
     final verify = vr._verifyEcdsa(hash, derSignature);
     if (!verify) {
-      throw const MessageException(
-          'The created signature does not pass verification.');
+      throw const MessageException('The created signature does not pass verification.');
     }
     return derSignature;
   }
@@ -143,13 +139,10 @@ class XrpSigner {
   ///
   /// returns An XrpVerifier instance based on the available signing key type.
   XrpVerifier toVerifyKey() {
-    final keyBytes = _ecdsaSigningKey?.privateKey.publicKey.toBytes() ??
-        _signingKey!.publicKey.toBytes();
-    return XrpVerifier.fromKeyBytes(
-        keyBytes,
-        _ecdsaSigningKey == null
-            ? EllipticCurveTypes.ed25519
-            : EllipticCurveTypes.secp256k1);
+    final keyBytes =
+        _ecdsaSigningKey?.privateKey.publicKey.toBytes() ?? _signingKey!.publicKey.toBytes();
+    return XrpVerifier.fromKeyBytes(keyBytes,
+        _ecdsaSigningKey == null ? EllipticCurveTypes.ed25519 : EllipticCurveTypes.secp256k1);
   }
 }
 
@@ -168,13 +161,12 @@ class XrpVerifier {
   ///
   /// [keyBytes] The bytes representing the public key.
   /// [curve] The elliptic curve type of the public key.
-  factory XrpVerifier.fromKeyBytes(
-      List<int> keyBytes, EllipticCurveTypes curve) {
+  factory XrpVerifier.fromKeyBytes(List<int> keyBytes, EllipticCurveTypes curve) {
     switch (curve) {
       case EllipticCurveTypes.ed25519:
         final pub = Ed25519PublicKey.fromBytes(keyBytes);
-        final verifyingKey = EDDSAPublicKey(
-            _XrpSignerConst.ed25519Generator, pub.compressed.sublist(1));
+        final verifyingKey =
+            EDDSAPublicKey(_XrpSignerConst.ed25519Generator, pub.compressed.sublist(1));
         return XrpVerifier._(verifyingKey, null);
       case EllipticCurveTypes.secp256k1:
         final point = ProjectiveECCPoint.fromBytes(
@@ -233,11 +225,9 @@ class XrpVerifier {
   /// [signature] The signature to be verified.
   /// [hashMessage] Whether to hash the message before verification, defaults to true.
   /// returns True if the signature is verified, false otherwise.
-  bool verify(List<int> digest, List<int> signature,
-      {bool hashMessage = true}) {
+  bool verify(List<int> digest, List<int> signature, {bool hashMessage = true}) {
     if (_edsaVerifyKey != null) {
-      final messagaeHash =
-          hashMessage ? QuickCrypto.sha512HashHalves(digest).item1 : digest;
+      final messagaeHash = hashMessage ? QuickCrypto.sha512HashHalves(digest).item1 : digest;
       return _verifyEcdsa(messagaeHash, signature);
     }
     return _verifyEddsa(digest, signature);

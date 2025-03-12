@@ -62,6 +62,14 @@ class StringUtils {
     return value;
   }
 
+  /// add the '0x' prefix to a hexadecimal string if it exists.
+  static String add0x(String value) {
+    if (value.toLowerCase().startsWith("0x")) {
+      return value;
+    }
+    return "0x$value";
+  }
+
   /// Encodes the given [value] string into a list of bytes using the specified [type].
   ///
   /// The [type] parameter determines the encoding type to use, with UTF-8 being the default.
@@ -161,7 +169,7 @@ class StringUtils {
     final decode = jsonDecode(data, reviver: reviver);
     if (decode is! T) {
       throw ArgumentException(
-          "Invalid json casting. excepted: $T got: ${decode.runtimeType}");
+          "Invalid json casting. expected: $T got: ${decode.runtimeType}");
     }
     return decode;
   }

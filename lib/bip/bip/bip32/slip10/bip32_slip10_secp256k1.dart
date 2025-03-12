@@ -35,8 +35,7 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       required super.pubKey});
 
   /// constructor for creating a key from a seed.
-  Bip32Slip10Secp256k1.fromSeed(super.seedBytes, [super.keyNetVer])
-      : super.fromSeed();
+  Bip32Slip10Secp256k1.fromSeed(super.seedBytes, [super.keyNetVer]) : super.fromSeed();
 
   /// constructor for creating a key from a seed.
   Bip32Slip10Secp256k1.fromMnemonic(String mnemonic,
@@ -57,8 +56,7 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       : super.fromPrivateKey(privKey, keyData, keyNetVer);
 
   /// constructor for creating a key from an extended key string.
-  Bip32Slip10Secp256k1.fromExtendedKey(super.exKeyStr, [super.keyNetVer])
-      : super.fromExtendedKey();
+  Bip32Slip10Secp256k1.fromExtendedKey(super.exKeyStr, [super.keyNetVer]) : super.fromExtendedKey();
 
   /// Returns the curve type, SECP256K1.
   @override
@@ -121,7 +119,6 @@ class Bip32Slip10Secp256k1 extends Bip32Base {
       }
       assert(!isPublicOnly);
       final result = keyDerivator.ckdPriv(privateKey, publicKey, index, curveType);
-
       return Bip32Slip10Secp256k1._(
           keyData: Bip32KeyData(
             chainCode: Bip32ChainCode(result.item2),

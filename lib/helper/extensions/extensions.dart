@@ -34,7 +34,7 @@ extension ListHelper<T> on List<T> {
   List<T> exceptedLen(int len, {String? message}) {
     if (length != len) {
       throw ArgumentException(message ?? 'Invalid length. ',
-          details: {"excepted": len, "length": length});
+          details: {"expected": len, "length": length});
     }
     return this;
   }
@@ -86,24 +86,34 @@ extension MapHelper<K, V> on Map<K, V> {
 }
 
 extension BigIntHelper on BigInt {
+  BigInt get asUint256 {
+    if (isNegative || this > maxU256) {
+      throw ArgumentException("Invalid Unsigned BigInt 256.",
+          details: {"expected": maxU256.bitLength, "bitLength": bitLength, "value": toString()});
+    }
+    return this;
+  }
+
+  BigInt get asUint128 {
+    if (isNegative || this > maxU128) {
+      throw ArgumentException("Invalid Unsigned BigInt 128.",
+          details: {"expected": maxU128.bitLength, "bitLength": bitLength, "value": toString()});
+    }
+    return this;
+  }
+
   BigInt get asUint64 {
     if (isNegative || this > maxU64) {
-      throw ArgumentException("Invalid Unsigned BigInt 64.", details: {
-        "excepted": maxU64.bitLength,
-        "bitLength": bitLength,
-        "value": toString()
-      });
+      throw ArgumentException("Invalid Unsigned BigInt 64.",
+          details: {"expected": maxU64.bitLength, "bitLength": bitLength, "value": toString()});
     }
     return this;
   }
 
   BigInt get asInt64 {
     if (this > maxInt64 || this < minInt64) {
-      throw ArgumentException("Invalid Signed BigInt 64.", details: {
-        "excepted": maxU64.bitLength,
-        "bitLength": bitLength,
-        "value": toString()
-      });
+      throw ArgumentException("Invalid Signed BigInt 64.",
+          details: {"expected": maxU64.bitLength, "bitLength": bitLength, "value": toString()});
     }
     return this;
   }
@@ -112,33 +122,32 @@ extension BigIntHelper on BigInt {
 extension IntHelper on int {
   int get asInt32 {
     if (this > maxInt32 || this < minInt32) {
-      throw ArgumentException("Invalid Signed int 32.", details: {
-        "excepted": mask32.bitLength,
-        "bitLength": bitLength,
-        "value": toString()
-      });
+      throw ArgumentException("Invalid Signed int 32.",
+          details: {"expected": mask32.bitLength, "bitLength": bitLength, "value": toString()});
     }
     return this;
   }
 
   int get asUint32 {
     if (isNegative || this > maxUint32) {
-      throw ArgumentException("Invalid Unsigned int 32.", details: {
-        "excepted": mask32.bitLength,
-        "bitLength": bitLength,
-        "value": toString()
-      });
+      throw ArgumentException("Invalid Unsigned int 32.",
+          details: {"expected": mask32.bitLength, "bitLength": bitLength, "value": toString()});
     }
     return this;
   }
 
   int get asUint8 {
     if (isNegative || this > mask8) {
-      throw ArgumentException("Invalid Unsigned int 8.", details: {
-        "excepted": mask32.bitLength,
-        "bitLength": bitLength,
-        "value": toString()
-      });
+      throw ArgumentException("Invalid Unsigned int 8.",
+          details: {"expected": mask32.bitLength, "bitLength": bitLength, "value": toString()});
+    }
+    return this;
+  }
+
+  int get asUint16 {
+    if (isNegative || this > mask16) {
+      throw ArgumentException("Invalid Unsigned int 16.",
+          details: {"expected": mask16.bitLength, "bitLength": bitLength, "value": toString()});
     }
     return this;
   }

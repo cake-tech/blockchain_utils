@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
 import 'package:blockchain_utils/bip/bip/bip32/bip32_key_net_ver.dart';
 import 'package:blockchain_utils/bip/bip/conf/config/bip_coin_conf.dart';
 import 'package:blockchain_utils/bip/bip/conf/core/coin_conf.dart';
@@ -25,6 +26,7 @@ class BipLitecoinConf extends BipCoinConfig {
     required this.altKeyNetVer,
     this.useAltKeyNetVer = false,
     this.useDeprAddress = false,
+    super.purpose,
   });
 
   /// Overrides the 'addrParams' getter to return the appropriate address parameters
@@ -32,17 +34,14 @@ class BipLitecoinConf extends BipCoinConfig {
   @override
   Map<String, dynamic> get addrParams {
     return {
-      "net_ver": useDeprAddress
-          ? super.addrParams["depr_net_ver"]
-          : super.addrParams['std_net_ver']
+      "net_ver": useDeprAddress ? super.addrParams["depr_net_ver"] : super.addrParams['std_net_ver']
     };
   }
 
   /// Overrides the 'keyNetVer' getter to use the alternate key network version
   /// when the 'usAltKeyNetVer' flag is set to true.
   @override
-  Bip32KeyNetVersions get keyNetVer =>
-      useAltKeyNetVer ? altKeyNetVer : super.keyNetVer;
+  Bip32KeyNetVersions get keyNetVer => useAltKeyNetVer ? altKeyNetVer : super.keyNetVer;
   @override
 
   /// Creates a copy of the BipLitecoinConf object with optional properties updated.
@@ -59,6 +58,7 @@ class BipLitecoinConf extends BipCoinConfig {
     AddrEncoder? addressEncoder,
     bool? useAltKeyNetVer,
     bool? useDeprAddress,
+    Bip32KeyIndex? purpose,
   }) {
     return BipLitecoinConf(
         coinNames: coinNames ?? this.coinNames,
@@ -72,6 +72,7 @@ class BipLitecoinConf extends BipCoinConfig {
         addressEncoder: addressEncoder ?? this.addressEncoder,
         altKeyNetVer: altKeyNetVer ?? this.altKeyNetVer,
         useAltKeyNetVer: useAltKeyNetVer ?? this.useAltKeyNetVer,
-        useDeprAddress: useDeprAddress ?? this.useDeprAddress);
+        useDeprAddress: useDeprAddress ?? this.useDeprAddress,
+        purpose: purpose ?? this.purpose);
   }
 }

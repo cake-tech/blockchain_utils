@@ -32,7 +32,7 @@ abstract class BaseServiceResponse<T> {
   E cast<E extends BaseServiceResponse>() {
     if (this is! E) {
       throw ArgumentException("BaseServiceResponse casting faild.",
-          details: {"excepted": "$T", "type": type.name});
+          details: {"expected": "$T", "type": type.name});
     }
     return this as E;
   }
@@ -45,8 +45,7 @@ abstract class BaseServiceResponse<T> {
           errorCode: null,
           request: params.toJson(),
           details: ServiceProviderUtils.findErrorDetails(
-              statusCode: statusCode,
-              object: cast<ServiceErrorResponse>().error)),
+              statusCode: statusCode, object: cast<ServiceErrorResponse>().error)),
       ServiceResponseType.success => cast<ServiceSuccessRespose<T>>().response
     };
   }
@@ -54,8 +53,7 @@ abstract class BaseServiceResponse<T> {
 
 class ServiceSuccessRespose<T> extends BaseServiceResponse<T> {
   final T response;
-  const ServiceSuccessRespose(
-      {required super.statusCode, required this.response})
+  const ServiceSuccessRespose({required super.statusCode, required this.response})
       : super(type: ServiceResponseType.success);
 }
 
@@ -69,8 +67,14 @@ abstract class BaseServiceRequestParams {
   final Map<String, String> headers;
   final RequestServiceType type;
   final int requestID;
+  final List<int>? successStatusCodes;
+  final List<int>? errorStatusCodes;
   const BaseServiceRequestParams(
-      {required this.headers, required this.type, required this.requestID});
+      {required this.headers,
+      required this.type,
+      required this.requestID,
+      this.successStatusCodes,
+      this.errorStatusCodes});
   Uri toUri(String uri);
   List<int>? body();
   Map<String, dynamic> toJson();
@@ -79,25 +83,38 @@ abstract class BaseServiceRequestParams {
     if (!ServiceProviderUtils.isSuccessStatusCode(statusCode)) {
       return ServiceErrorResponse(
           statusCode: statusCode,
-          error: ServiceProviderUtils.findError(
-              object: body, statusCode: statusCode));
+          error: ServiceProviderUtils.findError(object: body, statusCode: statusCode));
     }
     try {
       T response;
       if (body is List<int>) {
         response = ServiceProviderUtils.toResult<T>(body);
       } else {
-        response =
-            ServiceProviderUtils.parseResponse<T>(object: body, params: this);
+        response = ServiceProviderUtils.parseResponse<T>(object: body, params: this);
       }
-      return ServiceSuccessRespose<T>(
-          statusCode: statusCode, response: response);
+      return ServiceSuccessRespose<T>(statusCode: statusCode, response: response);
     } catch (_) {}
 
     throw RPCError(
-        message: "Parsing response failed.",
-        request: toJson(),
-        details: {"excepted": "$T"});
+        message: "Parsing response failed.", request: toJson(), details: {"expected": "$T"});
+  }
+
+  BaseServiceResponse<T> parseResponse<T>(List<int> bodyBytes, [int? statusCode]) {
+    statusCode ??= 200;
+    if (!ServiceProviderUtils.isSuccessStatusCode(statusCode,
+        allowSuccessStatusCodes: successStatusCodes)) {
+      return ServiceErrorResponse(
+          statusCode: statusCode,
+          error: ServiceProviderUtils.findError(
+              object: bodyBytes, statusCode: statusCode, allowStatusCode: errorStatusCodes));
+    }
+    try {
+      T response = ServiceProviderUtils.toResult<T>(bodyBytes);
+      return ServiceSuccessRespose<T>(statusCode: statusCode, response: response);
+    } catch (_) {}
+
+    throw RPCError(
+        message: "Parsing response failed.", request: toJson(), details: {"expected": "$T"});
   }
 }
 
@@ -123,6 +140,5 @@ abstract class BaseProvider<PARAMS extends BaseServiceRequestParams> {
 }
 
 mixin BaseServiceProvider<PARAMS extends BaseServiceRequestParams> {
-  Future<BaseServiceResponse<T>> doRequest<T>(PARAMS params,
-      {Duration? timeout});
+  Future<BaseServiceResponse<T>> doRequest<T>(PARAMS params, {Duration? timeout});
 }

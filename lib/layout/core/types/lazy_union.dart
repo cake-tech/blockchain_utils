@@ -8,29 +8,27 @@ class LazyVariantModel<T> {
   final LayoutFunc<T> layout;
   final String? property;
   final int index;
-  const LazyVariantModel(
-      {required this.layout, required this.property, required this.index});
+  const LazyVariantModel({required this.layout, required this.property, required this.index});
 }
 
 class LazyUnion extends Layout<Map<String, dynamic>> {
   final UnionLayoutDiscriminatorLayout discriminator;
   final Map<int, LazyVariantLayout> _registry = {};
-  LazyUnion._(
-      {required this.discriminator,
-      required int span,
-      required String? property})
+  LazyUnion._({required this.discriminator, required int span, required String? property})
       : super(span, property: property);
   factory LazyUnion(IntegerLayout discr, {String? property}) {
     return LazyUnion._(
-        discriminator:
-            UnionLayoutDiscriminatorLayout(OffsetLayout(PaddingLayout(discr))),
+        discriminator: UnionLayoutDiscriminatorLayout(OffsetLayout(PaddingLayout(discr))),
         span: -1,
         property: property);
   }
+  factory LazyUnion.offset(ExternalOffsetLayout discr, {String? property}) {
+    return LazyUnion._(
+        discriminator: UnionLayoutDiscriminatorLayout(discr), span: -1, property: property);
+  }
 
   @override
-  int getSpan(LayoutByteReader? bytes,
-      {int offset = 0, Map<String, dynamic>? source}) {
+  int getSpan(LayoutByteReader? bytes, {int offset = 0, Map<String, dynamic>? source}) {
     if (span >= 0) {
       return span;
     }
@@ -66,8 +64,7 @@ class LazyUnion extends Layout<Map<String, dynamic>> {
   }
 
   @override
-  LayoutDecodeResult<Map<String, dynamic>> decode(LayoutByteReader bytes,
-      {int offset = 0}) {
+  LayoutDecodeResult<Map<String, dynamic>> decode(LayoutByteReader bytes, {int offset = 0}) {
     final discr = discriminator.decode(bytes, offset: offset);
     final clo = _registry[discr.value];
     if (clo == null) {
@@ -83,8 +80,7 @@ class LazyUnion extends Layout<Map<String, dynamic>> {
   }
 
   @override
-  int encode(Map<String, dynamic> source, LayoutByteWriter writer,
-      {int offset = 0}) {
+  int encode(Map<String, dynamic> source, LayoutByteWriter writer, {int offset = 0}) {
     final vlo = defaultGetSourceVariant(source);
     if (vlo == null) {
       throw LayoutException("unable to determine source layout.",
@@ -100,17 +96,14 @@ class LazyUnion extends Layout<Map<String, dynamic>> {
     return rv;
   }
 
-  LazyVariantLayout? getVariant(LayoutByteReader variantBytes,
-      {int offset = 0}) {
-    final int variant =
-        discriminator.decode(variantBytes, offset: offset).value;
+  LazyVariantLayout? getVariant(LayoutByteReader variantBytes, {int offset = 0}) {
+    final int variant = discriminator.decode(variantBytes, offset: offset).value;
     return _registry[variant];
   }
 
   @override
   LazyUnion clone({String? newProperty}) {
-    final layout = LazyUnion._(
-        discriminator: discriminator, property: newProperty, span: span);
+    final layout = LazyUnion._(discriminator: discriminator, property: newProperty, span: span);
     layout._registry.addAll(Map.from(_registry));
     return layout;
   }
@@ -120,51 +113,50 @@ class LazyVariantLayout extends Layout<Map<String, dynamic>> {
   final LazyUnion union;
   final LazyVariantModel layout;
   const LazyVariantLayout._(
-      {required this.union,
-      required this.layout,
-      required int span,
-      String? property})
+      {required this.union, required this.layout, required int span, String? property})
       : super(span, property: property);
 
-  factory LazyVariantLayout(
-      {required LazyUnion union, required LazyVariantModel layout}) {
+  factory LazyVariantLayout({required LazyUnion union, required LazyVariantModel layout}) {
     return LazyVariantLayout._(
-        union: union,
-        span: union.span,
-        layout: layout,
-        property: layout.property);
+        union: union, span: union.span, layout: layout, property: layout.property);
   }
 
   @override
-  int getSpan(LayoutByteReader? bytes,
-      {int offset = 0, Map<String, dynamic>? source}) {
+  int getSpan(LayoutByteReader? bytes, {int offset = 0, Map<String, dynamic>? source}) {
     if (!this.span.isNegative) {
       return this.span;
     }
-    final int contentOffset = union.discriminator.layout.span;
+    int contentOffset = union.discriminator.layout.span;
+    if (contentOffset.isNegative) {
+      contentOffset =
+          union.discriminator.layout.getSpan(bytes, offset: offset, source: layout.index);
+    }
+    assert(contentOffset >= 0, "span cannot be negative.");
 
     int span = 0;
-    span = layout.layout(property: layout.property).getSpan(bytes,
-        offset: offset + contentOffset, source: source?[property]);
+    span = layout
+        .layout(property: layout.property)
+        .getSpan(bytes, offset: offset + contentOffset, source: source?[property]);
     assert(span >= 0, "span cannot be negative.");
     return contentOffset + span;
   }
 
   @override
-  LayoutDecodeResult<Map<String, dynamic>> decode(LayoutByteReader bytes,
-      {int offset = 0}) {
+  LayoutDecodeResult<Map<String, dynamic>> decode(LayoutByteReader bytes, {int offset = 0}) {
     if (this != union.getVariant(bytes, offset: offset)) {
-      throw LayoutException("variant mismatch",
-          details: {"property": property});
+      throw LayoutException("variant mismatch", details: {"property": property});
     }
 
-    final int contentOffset = union.discriminator.layout.span;
+    int contentOffset = union.discriminator.layout.span;
+    if (contentOffset.isNegative) {
+      contentOffset = union.discriminator.decode(bytes, offset: offset).consumed;
+    }
+    assert(contentOffset >= 0, "span cannot be negative.");
 
     final Map<String, dynamic> dest = {};
     int consumed = 0;
-    final result = layout
-        .layout(property: layout.property)
-        .decode(bytes, offset: offset + contentOffset);
+    final result =
+        layout.layout(property: layout.property).decode(bytes, offset: offset + contentOffset);
     dest[property!] = result.value;
     consumed += result.consumed;
 
@@ -172,20 +164,22 @@ class LazyVariantLayout extends Layout<Map<String, dynamic>> {
   }
 
   @override
-  int encode(Map<String, dynamic> source, LayoutByteWriter writer,
-      {int offset = 0}) {
-    final int contentOffset = union.discriminator.layout.span;
+  int encode(Map<String, dynamic> source, LayoutByteWriter writer, {int offset = 0}) {
+    int contentOffset = union.discriminator.layout.span;
+    if (contentOffset.isNegative) {
+      contentOffset = union.discriminator.encode(this.layout.index, writer, offset: offset);
+    }
+    assert(contentOffset >= 0, "span cannot be negative.");
     if (!source.containsKey(property)) {
-      throw LayoutException("variant lacks property",
-          details: {"property": property});
+      throw LayoutException("variant lacks property", details: {"property": property});
     }
     union.discriminator.encode(this.layout.index, writer, offset: offset);
     int span = contentOffset;
 
     final layout = this.layout.layout(property: this.layout.property);
     layout.encode(source[property], writer, offset: offset + contentOffset);
-    final lSpan = layout.getSpan(writer.reader,
-        offset: offset + contentOffset, source: source[property]);
+    final lSpan =
+        layout.getSpan(writer.reader, offset: offset + contentOffset, source: source[property]);
     assert(lSpan >= 0, "span cannot be negative.");
     span += lSpan;
 
@@ -199,7 +193,6 @@ class LazyVariantLayout extends Layout<Map<String, dynamic>> {
 
   @override
   LazyVariantLayout clone({String? newProperty}) {
-    return LazyVariantLayout._(
-        union: union, layout: layout, property: newProperty, span: span);
+    return LazyVariantLayout._(union: union, layout: layout, property: newProperty, span: span);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/exception/exceptions.dart';
-import 'package:blockchain_utils/signer/ecdsa_signing_key.dart';
+import 'package:blockchain_utils/signer/signing_key/ecdsa_signing_key.dart';
 import 'package:blockchain_utils/signer/eth/eth_signature.dart';
 import 'package:blockchain_utils/signer/eth/evm_signer.dart';
 import 'package:blockchain_utils/utils/utils.dart';
@@ -28,8 +28,7 @@ class TronSigner {
 
   /// Factory method to create a TronSigner from a byte representation of a private key.
   factory TronSigner.fromKeyBytes(List<int> keyBytes) {
-    final signingKey =
-        ECDSAPrivateKey.fromBytes(keyBytes, ETHSignerConst.secp256);
+    final signingKey = ECDSAPrivateKey.fromBytes(keyBytes, ETHSignerConst.secp256);
     return TronSigner._(EcdsaSigningKey(signingKey));
   }
 
@@ -39,11 +38,10 @@ class TronSigner {
       throw ArgumentException(
           "invalid digest. digest length must be ${ETHSignerConst.digestLength} got ${digest.length}");
     }
-    ECDSASignature ecdsaSign = _ecdsaSigningKey.signDigestDeterminstic(
-        digest: hash, hashFunc: () => SHA256());
+    ECDSASignature ecdsaSign =
+        _ecdsaSigningKey.signDigestDeterminstic(digest: hash, hashFunc: () => SHA256());
     if (ecdsaSign.s > ETHSignerConst.orderHalf) {
-      ecdsaSign =
-          ECDSASignature(ecdsaSign.r, ETHSignerConst.curveOrder - ecdsaSign.s);
+      ecdsaSign = ECDSASignature(ecdsaSign.r, ETHSignerConst.curveOrder - ecdsaSign.s);
     }
     final sigBytes = ecdsaSign.toBytes(ETHSignerConst.secp256.curve.baselen);
     final verifyKey = toVerifyKey();
@@ -56,8 +54,7 @@ class TronSigner {
       }
     }
 
-    throw const MessageException(
-        'The created signature does not pass verification.');
+    throw const MessageException('The created signature does not pass verification.');
   }
 
   /// Signs a message digest using the ECDSA algorithm on the secp256k1 curve.
@@ -89,15 +86,13 @@ class TronSigner {
   ///
   /// Returns:
   /// - A byte list representing the signature of the personal message.
-  List<int> signProsonalMessage(List<int> digest,
-      {int? payloadLength, bool useEthPrefix = false}) {
+  List<int> signProsonalMessage(List<int> digest, {int? payloadLength, bool useEthPrefix = false}) {
     String prefix = useEthPrefix
         ? ETHSignerConst.ethPersonalSignPrefix
         : TronSignerConst.tronPersonalSignPrefix;
     prefix = prefix + (payloadLength?.toString() ?? digest.length.toString());
     final prefixBytes = StringUtils.encode(prefix, type: StringEncoding.ascii);
-    return _signEcdsa(
-        QuickCrypto.keccack256Hash(<int>[...prefixBytes, ...digest]),
+    return _signEcdsa(QuickCrypto.keccack256Hash(<int>[...prefixBytes, ...digest]),
         hashMessage: false);
   }
 
@@ -106,8 +101,7 @@ class TronSigner {
   /// Returns:
   /// - A TronVerifier representing the verification key.
   TronVerifier toVerifyKey() {
-    return TronVerifier.fromKeyBytes(
-        _ecdsaSigningKey.privateKey.publicKey.toBytes());
+    return TronVerifier.fromKeyBytes(_ecdsaSigningKey.privateKey.publicKey.toBytes());
   }
 }
 
@@ -129,8 +123,7 @@ class TronVerifier {
     return TronVerifier._(ECDSAVerifyKey(verifyingKey));
   }
   bool _verifyEcdsa(List<int> digest, List<int> sigBytes) {
-    final signature =
-        ECDSASignature.fromBytes(sigBytes, ETHSignerConst.secp256);
+    final signature = ECDSASignature.fromBytes(sigBytes, ETHSignerConst.secp256);
     return edsaVerifyKey.verify(signature, digest);
   }
 
@@ -163,10 +156,8 @@ class TronVerifier {
       String prefix = useEthPrefix
           ? ETHSignerConst.ethPersonalSignPrefix
           : TronSignerConst.tronPersonalSignPrefix;
-      prefix =
-          prefix + (payloadLength?.toString() ?? message.length.toString());
-      final prefixBytes =
-          StringUtils.encode(prefix, type: StringEncoding.ascii);
+      prefix = prefix + (payloadLength?.toString() ?? message.length.toString());
+      final prefixBytes = StringUtils.encode(prefix, type: StringEncoding.ascii);
       message = QuickCrypto.keccack256Hash(<int>[...prefixBytes, ...message]);
     }
     if (signature.length > ETHSignerConst.ethSignatureLength) {
@@ -187,17 +178,13 @@ class TronVerifier {
   /// Returns:
   /// - The recovered ECDSAPublicKey.
   static ECDSAPublicKey? getPublicKey(List<int> message, List<int> signature,
-      {bool hashMessage = true,
-      int? payloadLength,
-      bool useEthPrefix = false}) {
+      {bool hashMessage = true, int? payloadLength, bool useEthPrefix = false}) {
     if (hashMessage) {
       String prefix = useEthPrefix
           ? ETHSignerConst.ethPersonalSignPrefix
           : TronSignerConst.tronPersonalSignPrefix;
-      prefix =
-          prefix + (payloadLength?.toString() ?? message.length.toString());
-      final prefixBytes =
-          StringUtils.encode(prefix, type: StringEncoding.ascii);
+      prefix = prefix + (payloadLength?.toString() ?? message.length.toString());
+      final prefixBytes = StringUtils.encode(prefix, type: StringEncoding.ascii);
       message = QuickCrypto.keccack256Hash(<int>[...prefixBytes, ...message]);
     }
 
@@ -205,10 +192,8 @@ class TronVerifier {
     final toBytes = ethSignature.toBytes(false);
     final recoverId = toBytes[ETHSignerConst.ethSignatureLength];
     final signatureBytes = ECDSASignature.fromBytes(
-        toBytes.sublist(0, ETHSignerConst.ethSignatureLength),
-        ETHSignerConst.secp256);
+        toBytes.sublist(0, ETHSignerConst.ethSignatureLength), ETHSignerConst.secp256);
 
-    return signatureBytes.recoverPublicKey(
-        message, ETHSignerConst.secp256, recoverId);
+    return signatureBytes.recoverPublicKey(message, ETHSignerConst.secp256, recoverId);
   }
 }

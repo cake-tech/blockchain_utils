@@ -15,10 +15,7 @@ abstract class ExternalLayout extends Layout<int> {
 }
 
 abstract class ExternalOffsetLayout extends ExternalLayout {
-  const ExternalOffsetLayout({String? property})
-      : super(-1, property: property);
-  LayoutDecodeResult<int> getLenAndSpan(LayoutByteReader bytes,
-      {int offset = 0});
+  const ExternalOffsetLayout({String? property}) : super(-1, property: property);
 }
 
 /// Represents a layout that greedily consumes bytes until the end.
@@ -62,10 +59,8 @@ abstract class BaseIntiger<T> extends Layout<T> {
 /// Represents a layout for double-precision floating point numbers.
 class DoubleLayout extends Layout<double> {
   final Endian order;
-  DoubleLayout.f32({String? property, this.order = Endian.little})
-      : super(4, property: property);
-  DoubleLayout.f64({String? property, this.order = Endian.little})
-      : super(8, property: property);
+  DoubleLayout.f32({String? property, this.order = Endian.little}) : super(4, property: property);
+  DoubleLayout.f64({String? property, this.order = Endian.little}) : super(8, property: property);
 
   @override
   LayoutDecodeResult<double> decode(LayoutByteReader bytes, {int offset = 0}) {
@@ -105,13 +100,11 @@ class IntegerLayout extends BaseIntiger<int> {
   @override
   void validate(int value) {
     if (value.isNegative && !sign) {
-      throw LayoutException(
-          "Negative value cannot be encoded with unsigned layout.",
+      throw LayoutException("Negative value cannot be encoded with unsigned layout.",
           details: {"property": property});
     }
     if (value.bitLength > span * 8) {
-      throw LayoutException(
-          "Value exceeds the maximum size for encoding with this layout.",
+      throw LayoutException("Value exceeds the maximum size for encoding with this layout.",
           details: {
             "property": property,
             "layout": runtimeType.toString(),
@@ -122,9 +115,9 @@ class IntegerLayout extends BaseIntiger<int> {
     }
   }
 
-  IntegerLayout(int span,
-      {this.sign = false, this.order = Endian.little, String? property})
+  IntegerLayout(int span, {this.sign = false, this.order = Endian.little, String? property})
       : super(span, property: property) {
+    assert(!span.isNegative, "Invalid integer layout span");
     if (6 < this.span) {
       throw LayoutException("span must not exceed 6 bytes", details: {
         "property": property,
@@ -169,26 +162,23 @@ class BigIntLayout extends BaseIntiger<BigInt> {
   final bool sign;
   @override
   final Endian order;
-  BigIntLayout(super.span,
-      {this.sign = false, this.order = Endian.little, super.property});
+  BigIntLayout(super.span, {this.sign = false, this.order = Endian.little, super.property});
   @override
   void validate(BigInt value) {
     if (value.isNegative && !sign) {
-      throw LayoutException(
-          "Negative value cannot be encoded with unsigned layout.",
+      throw LayoutException("Negative value cannot be encoded with unsigned layout.",
           details: {"property": property});
     }
     if (value.bitLength > span * 8) {
-      throw LayoutException(
-          "Value exceeds the maximum size for encoding with this layout.",
+      throw LayoutException("Value exceeds the maximum size for encoding with this layout.",
           details: {"property": property});
     }
   }
 
   @override
   LayoutDecodeResult<BigInt> decode(LayoutByteReader bytes, {int offset = 0}) {
-    final result = BigintUtils.fromBytes(bytes.sublist(offset, offset + span),
-        byteOrder: order, sign: sign);
+    final result =
+        BigintUtils.fromBytes(bytes.sublist(offset, offset + span), byteOrder: order, sign: sign);
     return LayoutDecodeResult(consumed: span, value: result);
   }
 
@@ -216,8 +206,7 @@ class UnionLayoutDiscriminatorLayout extends UnionDiscriminatorLayout {
   final ExternalLayout layout;
 
   UnionLayoutDiscriminatorLayout(this.layout, {String? property})
-      : assert(layout.isCount(),
-            'layout must be an unsigned integer ExternalLayout'),
+      : assert(layout.isCount(), 'layout must be an unsigned integer ExternalLayout'),
         super(property ?? layout.property ?? 'variant');
 
   @override
@@ -268,8 +257,7 @@ class OffsetLayout extends ExternalLayout {
 
 class CompactIntLayout extends Layout<int> {
   final IntegerLayout layout;
-  const CompactIntLayout(this.layout, {String? property})
-      : super(-1, property: property);
+  const CompactIntLayout(this.layout, {String? property}) : super(-1, property: property);
   @override
   int getSpan(LayoutByteReader? bytes, {int offset = 0, int? source}) {
     return bytes!.getCompactDataOffset(offset);
@@ -297,8 +285,7 @@ class CompactIntLayout extends Layout<int> {
 }
 
 class CompactBigIntLayout extends Layout<BigInt> {
-  CompactBigIntLayout(this.layout, {String? property})
-      : super(-1, property: property);
+  CompactBigIntLayout(this.layout, {String? property}) : super(-1, property: property);
   final BaseIntiger layout;
   @override
   int getSpan(LayoutByteReader? bytes, {int offset = 0, BigInt? source}) {
