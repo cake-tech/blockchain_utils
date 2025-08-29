@@ -22,23 +22,6 @@ const btcWifNetVerTn = [0xef];
 
 /// A class that provides configurations for various cryptocurrencies.
 class CoinsConf {
-  /// Configuration for Acala
-  static const CoinConf acala = CoinConf(
-      coinName: CoinNames("Acala", "ACA"),
-      params: CoinParams(addrSs58Format: 10));
-
-  /// Configuration for Akash Network
-  static const CoinConf akashNetwork = CoinConf(
-    coinName: CoinNames("Akash Network", "AKT"),
-    params: CoinParams(
-      addrHrp: Slip173.akashNetwork,
-    ),
-  );
-
-  /// Configuration for Algorand
-  static const CoinConf algorand =
-      CoinConf(coinName: CoinNames("Algorand", "ALGO"), params: CoinParams());
-
   /// Class container for coins configuration.
 
   /// Configuration for Aptos

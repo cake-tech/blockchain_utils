@@ -6,13 +6,13 @@ import 'package:blockchain_utils/crypto/crypto/cdsa/point/edwards.dart';
 import 'package:blockchain_utils/crypto/crypto/cdsa/utils/utils.dart';
 
 /// An enumeration representing different types of encoding for elliptic curve points.
-enum EncodeType { comprossed, hybrid, raw, uncompressed }
+enum EncodeType { compressed, hybrid, raw, uncompressed }
 
 /// An abstract class representing an elliptic curve point.
 abstract class AbstractPoint {
   /// Converts the elliptic curve point to a byte array with the specified encoding type.
   /// The default encoding type is 'compressed'.
-  List<int> toBytes([EncodeType encodeType = EncodeType.comprossed]) {
+  List<int> toBytes([EncodeType encodeType = EncodeType.compressed]) {
     if (this is EDPoint) {
       return _edwardsEncode();
     }
@@ -30,7 +30,7 @@ abstract class AbstractPoint {
 
   /// Encodes the elliptic curve point as a hexadecimal string with the specified encoding type.
   /// The default encoding type is 'compressed'.
-  String toHex([EncodeType encodeType = EncodeType.comprossed]) {
+  String toHex([EncodeType encodeType = EncodeType.compressed]) {
     final bytes = toBytes(encodeType);
     return BytesUtils.toHexString(bytes);
   }
@@ -101,16 +101,9 @@ abstract class AbstractPoint {
   /// Doubles a point
   AbstractPoint doublePoint();
 
-  /// Creates an elliptic curve point from its byte representation.
-  static Tuple<BigInt, BigInt> fromBytes(
-    Curve curve,
-    List<int> data, {
-    bool validateEncoding = true,
-    EncodeType? encodeType,
-  }) {
-    if (curve is CurveED) {
-      return _fromEdwards(curve, data);
-    }
+  EncodeType? encodeType;
+
+  static EncodeType? getEncodeType(Curve curve, List<int> data, {EncodeType? encodeType}) {
     final keyLen = data.length;
     final rawEncodingLength = 2 * BigintUtils.orderLen(curve.p);
     if (encodeType == null) {
@@ -126,14 +119,55 @@ abstract class AbstractPoint {
           throw const CryptoException("invalid key length");
         }
       } else if (keyLen == rawEncodingLength ~/ 2 + 1) {
-        encodeType = EncodeType.comprossed;
+        encodeType = EncodeType.compressed;
       } else {
-        throw const CryptoException("invalid key length");
+        final x = BigintUtils.fromBytes(data);
+
+        if (curve.isXCoord(x)) {
+          var coords = curve.liftX(x);
+          if (coords[1].isOdd) {
+            coords = curve.negate(coords);
+          }
+
+          encodeType = EncodeType.compressed;
+        }
+      }
+    }
+
+    return encodeType;
+  }
+
+  /// Creates an elliptic curve point from its byte representation.
+  static Tuple<BigInt, BigInt> fromBytes(
+    Curve curve,
+    List<int> data, {
+    bool validateEncoding = true,
+    EncodeType? encodeType,
+  }) {
+    if (curve is CurveED) {
+      return _fromEdwards(curve, data);
+    }
+    final keyLen = data.length;
+    final rawEncodingLength = 2 * BigintUtils.orderLen(curve.p);
+    encodeType = getEncodeType(curve, data, encodeType: encodeType);
+    if (keyLen == rawEncodingLength) {
+    } else if (keyLen == rawEncodingLength + 1) {
+    } else if (keyLen == rawEncodingLength ~/ 2 + 1) {
+    } else {
+      final x = BigintUtils.fromBytes(data);
+
+      if (curve.isXCoord(x)) {
+        var coords = curve.liftX(x);
+        if (coords[1].isOdd) {
+          coords = curve.negate(coords);
+        }
+
+        return Tuple(coords[0], coords[1]);
       }
     }
     curve as CurveFp;
     switch (encodeType) {
-      case EncodeType.comprossed:
+      case EncodeType.compressed:
         return _fromCompressed(data, curve);
       case EncodeType.uncompressed:
         return _fromRawEncoding(data.sublist(1), rawEncodingLength);

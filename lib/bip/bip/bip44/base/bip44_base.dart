@@ -9,7 +9,6 @@ import 'package:blockchain_utils/bip/bip/bip32/slip10/bip32_slip10_nist256p1_hyb
 import 'package:blockchain_utils/bip/bip/bip32/slip10/bip32_slip10_secp256k1.dart';
 import 'package:blockchain_utils/bip/bip/bip44/base/bip44_base_ex.dart';
 import 'package:blockchain_utils/bip/bip/conf/config/bip_coin_conf.dart';
-import 'package:blockchain_utils/bip/cardano/bip32/cardano_icarus_bip32.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
@@ -100,10 +99,6 @@ abstract class Bip44Base {
         bip = Bip32Slip10Ed25519.fromSeed(seedBytes, coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Kholaw:
-        if (coin.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromSeed(seedBytes, coin.keyNetVer);
-          break;
-        }
         bip = Bip32KholawEd25519.fromSeed(seedBytes, coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Blake2b:
@@ -135,11 +130,6 @@ abstract class Bip44Base {
         bip = Bip32Slip10Ed25519.fromExtendedKey(extendedKey, coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Kholaw:
-        if (coin.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromExtendedKey(extendedKey, coin.keyNetVer);
-
-          break;
-        }
         bip = Bip32KholawEd25519.fromExtendedKey(extendedKey, coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Blake2b:
@@ -178,11 +168,6 @@ abstract class Bip44Base {
             keyData: keyData, keyNetVer: coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Kholaw:
-        if (coin.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromPrivateKey(privateKeyBytes,
-              keyData: keyData, keyNetVer: coin.keyNetVer);
-          break;
-        }
         bip = Bip32KholawEd25519.fromPrivateKey(privateKeyBytes,
             keyData: keyData, keyNetVer: coin.keyNetVer);
         break;
@@ -223,11 +208,6 @@ abstract class Bip44Base {
             keyData: keyData, keyNetVer: coin.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Kholaw:
-        if (coin.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromPublicKey(pubkeyBytes,
-              keyData: keyData, keyNetVer: coin.keyNetVer);
-          break;
-        }
         bip = Bip32KholawEd25519.fromPublicKey(pubkeyBytes,
             keyData: keyData, keyNetVer: coin.keyNetVer);
         break;

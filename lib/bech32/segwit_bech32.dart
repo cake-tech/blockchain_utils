@@ -121,6 +121,13 @@ class SegwitBech32Decoder extends Bech32DecoderBase {
     return Tuple(witVer, convData);
   }
 
+  /// Decodes the Human-Readable Part (HRP) from a Bech32-encoded SegWit address.
+  static String decodeHrp(String addr) {
+    final decoded = Bech32DecoderBase.decodeBech32(
+        addr, SegwitBech32Const.separator, SegwitBech32Const.checksumStrLen, _verifyChecksum);
+    return decoded.item1;
+  }
+
   static bool _verifyChecksum(String hrp, List<int> data) {
     final encoding = (data[0] == SegwitBech32Const.witnessVerBech32
         ? Bech32Encodings.bech32

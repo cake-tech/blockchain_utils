@@ -1,8 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/bip/bip_coins.dart';
-import 'package:blockchain_utils/bip/cardano/cip1852/conf/cip1852_coins.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/bip/monero/conf/monero_coins.dart';
-import 'package:blockchain_utils/bip/substrate/conf/substrate_coins.dart';
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'coin_conf.dart';
 
@@ -27,10 +25,6 @@ abstract class CryptoCoins<T extends CoinConfig> {
       case BipProposal.bip84:
       case BipProposal.bip86:
         return BipCoins.fromName(name, proposal as BipProposal);
-      case CipProposal.cip1852:
-        return Cip1852Coins.fromName(name);
-      case SubstratePropoosal.substrate:
-        return SubstrateCoins.fromName(name);
       case MoneroProposal.monero:
         return MoneroCoins.fromName(name);
       default:
@@ -46,17 +40,11 @@ abstract class CryptoCoins<T extends CoinConfig> {
       case BipProposal.bip84:
       case BipProposal.bip86:
         return BipCoins.fromCurve(curve, proposal: proposal);
-      case CipProposal.cip1852:
-        return Cip1852Coins.fromCurve(curve);
-      case SubstratePropoosal.substrate:
-        return SubstrateCoins.fromCurve(curve);
       case MoneroProposal.monero:
         return MoneroCoins.fromCurve(curve);
       case null:
         return [
           ...BipCoins.fromCurve(curve),
-          ...Cip1852Coins.fromCurve(curve),
-          ...SubstrateCoins.fromCurve(curve),
           ...MoneroCoins.fromCurve(curve)
         ];
       default:
@@ -80,10 +68,6 @@ abstract class CoinProposal {
 
   static CoinProposal fromName(String name) {
     switch (name) {
-      case "cip1852":
-        return CipProposal.cip1852;
-      case "substrate":
-        return SubstratePropoosal.substrate;
       case "monero":
         return MoneroProposal.monero;
       default:

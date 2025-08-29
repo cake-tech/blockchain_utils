@@ -1,3 +1,5 @@
+import 'package:blockchain_utils/crypto/crypto/cdsa/utils/utils.dart';
+import 'package:blockchain_utils/utils/numbers/utils/bigint_utils.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 
 /// This class represents a finite field elliptic curve defined over a prime field (Fp).
@@ -49,6 +51,28 @@ class CurveFp extends Curve {
 
   @override
   int get verifyingKeyLength => throw UnimplementedError();
+
+  @override
+  bool isXCoord(BigInt x) {
+    BigInt x_3 = x.modPow(BigInt.from(3), p);
+    return ECDSAUtils.jacobi(x_3 + a * x + b, p) != -1;
+  }
+
+  @override
+  List<BigInt> liftX(BigInt x) {
+    BigInt x_3 = x.modPow(BigInt.from(3), p);
+    BigInt v = (x_3 + a * x + b) % p;
+    BigInt y = ECDSAUtils.modularSquareRootPrime(v, p);
+    return [x, y, BigInt.one];
+  }
+
+  @override
+  List<BigInt> negate(List<BigInt> p1) {
+    BigInt x1 = p1[0];
+    BigInt y1 = p1[1];
+    BigInt z1 = p1[2];
+    return [x1, (p - y1) % p, z1];
+  }
 }
 
 /// This class represents a twisted Edwards elliptic curve defined over a prime field.
@@ -105,6 +129,21 @@ class CurveED extends Curve {
 
   @override
   int get verifyingKeyLength => baselen;
+
+  @override
+  bool isXCoord(BigInt x) {
+    throw UnimplementedError();
+  }
+
+  @override
+  List<BigInt> liftX(BigInt x) {
+    throw UnimplementedError();
+  }
+
+  @override
+  List<BigInt> negate(List<BigInt> p1) {
+    throw UnimplementedError();
+  }
 }
 
 /// This is an abstract base class for elliptic curves.
@@ -120,4 +159,8 @@ abstract class Curve {
 
   /// Get the length of the verifying key in the curve
   int get verifyingKeyLength;
+
+  bool isXCoord(BigInt x);
+  List<BigInt> liftX(BigInt x);
+  List<BigInt> negate(List<BigInt> p1);
 }

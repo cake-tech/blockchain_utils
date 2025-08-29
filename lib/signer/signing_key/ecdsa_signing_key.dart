@@ -419,7 +419,7 @@ class Secp256k1SigningKey extends ECDSASigningKey {
 
     List<int> byteKey = <int>[];
     if (tapTweakHash != null) {
-      byteKey = BitcoinSignerUtils.calculatePrivateTweek(
+      byteKey = BitcoinSignerUtils.calculatePrivateTweak(
           privateKey.toBytes(), tapTweakHash);
     } else {
       byteKey = privateKey.toBytes();

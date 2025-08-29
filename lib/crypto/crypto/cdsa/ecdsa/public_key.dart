@@ -83,7 +83,7 @@ class ECDSAPublicKey {
     return v == r;
   }
 
-  List<int> toBytes([EncodeType encodeType = EncodeType.comprossed]) {
+  List<int> toBytes([EncodeType encodeType = EncodeType.compressed]) {
     return point.toBytes(encodeType);
   }
 

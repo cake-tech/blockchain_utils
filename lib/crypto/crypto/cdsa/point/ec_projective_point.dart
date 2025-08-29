@@ -41,10 +41,11 @@ class ProjectiveECCPoint extends AbstractPoint {
       required BigInt y,
       required BigInt z,
       BigInt? order,
-      bool generator = false}) {
+      bool generator = false,
+      EncodeType? encodeType}) {
     final coords = [x, y, z];
     return ProjectiveECCPoint._(curve, coords,
-        generator: generator, order: order);
+        generator: generator, order: order, encodeType: encodeType);
   }
 
   /// Constructs a special [ProjectiveECCPoint] representing infinity on the elliptic curve.
@@ -68,7 +69,8 @@ class ProjectiveECCPoint extends AbstractPoint {
         y: y,
         z: BigInt.one,
         generator: false,
-        order: order);
+        order: order,
+        encodeType: AbstractPoint.getEncodeType(curve, data));
   }
 
   ///  The elliptic curve associated with this point.
@@ -96,15 +98,21 @@ class ProjectiveECCPoint extends AbstractPoint {
       _coords.isEmpty ||
       (_coords[0] == BigInt.zero && _coords[1] == BigInt.zero);
 
+  @override
+  EncodeType? encodeType;
+
   /// Private constructor for creating a [ProjectiveECCPoint].
   /// [curve] is the elliptic curve, [coords] are the projective coordinates [x, y, z].
   /// [order] is the order of the point, and [generator] indicates if the point is a generator.
   /// [precompute] is a list of precomputed values for point operations.
-  ProjectiveECCPoint._(this.curve, this._coords,
-      {this.order,
-      bool generator = false,
-      List<List<BigInt>> precompute = const []})
-      : _precompute = precompute,
+  ProjectiveECCPoint._(
+    this.curve,
+    this._coords, {
+    this.order,
+    bool generator = false,
+    List<List<BigInt>> precompute = const [],
+    this.encodeType,
+  })  : _precompute = precompute,
         generator = generator && order != null;
 
   /// Precompute values for faster point operations if necessary.

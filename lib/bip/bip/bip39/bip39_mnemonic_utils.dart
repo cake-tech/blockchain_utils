@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/algorand/mnemonic/algorand_mnemonic.dart';
 import 'package:blockchain_utils/bip/electrum/mnemonic_v2/electrum_v2_mnemonic.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic_utils.dart';
@@ -16,7 +15,6 @@ class Bip39WordsListGetter extends MnemonicWordsListGetterBase {
   @override
   MnemonicWordsList getByLanguage(MnemonicLanguages language) {
     if (language is! Bip39Languages &&
-        language is! AlgorandLanguages &&
         language is! ElectrumV2Languages) {
       throw const ArgumentException(
           "Language is not an enumerative of Bip39Languages");

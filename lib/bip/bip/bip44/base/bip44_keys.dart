@@ -66,18 +66,10 @@ class Bip44PublicKey {
   /// addresses.
   String get toAddress {
     final BlockchainAddressEncoder encoder = coinConf.encoder();
-    if (encoder is AdaShelleyAddrEncoder) {
-      throw const ArgumentException(
-          'Use the CardanoShelley class to get Cardano Shelley addresses');
-    }
     // Exception for Monero
     if (encoder is XmrAddrEncoder) {
       throw const ArgumentException(
           'Use the Monero class to get Monero addresses');
-    }
-    if (encoder is TonAddrEncoder) {
-      throw const ArgumentException(
-          'Ton Address must be generated with hash of contract state. use TonAddrEncoder to encode address.');
     }
     return encoder.encodeKey(
         pubKey.pubKey.compressed, coinConf.getParams(pubKey));

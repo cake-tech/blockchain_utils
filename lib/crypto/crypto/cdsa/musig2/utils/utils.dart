@@ -91,7 +91,7 @@ class MuSig2Utils {
         return -p;
       }
     } catch (_) {}
-    throw MuSig2Exception("Invalid comprossed point");
+    throw MuSig2Exception("Invalid compressed point");
   }
 
   static ProjectiveECCPoint encodeOrInfinityPoint(List<int> keyBytes) {
@@ -107,7 +107,7 @@ class MuSig2Utils {
         return -p;
       }
     } catch (_) {}
-    throw MuSig2Exception("Invalid comprossed point");
+    throw MuSig2Exception("Invalid compressed point");
   }
 
   static MuSig2SessionValues decodeSession(MuSig2Session session) {

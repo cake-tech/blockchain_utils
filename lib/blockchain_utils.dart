@@ -11,9 +11,6 @@ export 'base58/base58.dart';
 /// Export for Bech32 encoding and decoding utilities.
 export 'bech32/bech32.dart';
 
-/// Export for CBOR (Concise Binary Object Representation) utilities.
-export 'cbor/cbor.dart';
-
 /// Export for various cryptographic functions and utilities.
 export 'crypto/crypto/crypto.dart';
 
@@ -22,9 +19,6 @@ export 'crypto/quick_crypto.dart';
 
 /// Export for hexadecimal encoding and decoding utilities.
 export 'hex/hex.dart';
-
-/// Export for tools related to managing secret wallets.
-export 'secret_wallet/web3_storage_defination.dart';
 
 /// Export for SS58 (Substrate/Polkadot/Stash encoding) utilities.
 export 'ss58/ss58.dart';

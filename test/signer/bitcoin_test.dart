@@ -186,7 +186,7 @@ void _tests() {
       final btcSigner = BitcoinKeySigner.fromKeyBytes(privateKey.raw);
       final digest = BytesUtils.fromHexString(
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-      final merkleRoot = BitcoinSignerUtils.calculatePrivateTweek(
+      final merkleRoot = BitcoinSignerUtils.calculatePrivateTweak(
           privateKey.raw, List<int>.filled(32, 12));
       final sig = btcSigner.signBip340(
           digest: digest,

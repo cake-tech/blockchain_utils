@@ -108,7 +108,7 @@ class Nist256p1PublicKey implements IPublicKey {
   /// public key compressed bytes.
   @override
   List<int> get compressed {
-    return publicKey.point.toBytes(EncodeType.comprossed);
+    return publicKey.point.toBytes(EncodeType.compressed);
   }
 
   /// public key uncompressed bytes.

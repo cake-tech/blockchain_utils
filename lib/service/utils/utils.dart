@@ -55,7 +55,7 @@ class ServiceProviderUtils {
   /// - [params]: Optional parameters for the RPC call.
   ///
   /// Returns: A map representing the JSON-RPC request.
-  static Map<String, dynamic> buildJsonRPCParams({
+  static Map<String, dynamic> buildJsonRPCObject({
     required int requestId,
     required String method,
     Object? params,

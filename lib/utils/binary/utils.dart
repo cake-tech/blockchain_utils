@@ -207,6 +207,19 @@ class BytesUtils {
     return 0;
   }
 
+  static List<int> concatBytes(List<List<int>> lists) {
+    var totalLength = lists.fold<int>(0, (sum, list) => sum + list.length);
+    var result = List<int>.filled(totalLength, 0);
+    var offset = 0;
+
+    for (var list in lists) {
+      result.setRange(offset, offset + list.length, list);
+      offset += list.length;
+    }
+
+    return result;
+  }
+
   static bool isContains(List<List<int>> a, List<int> part) {
     for (final i in a) {
       if (bytesEqual(i, part)) return true;

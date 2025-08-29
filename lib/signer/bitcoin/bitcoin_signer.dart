@@ -32,7 +32,7 @@ class BitcoinSignerUtils {
   ///
   /// The tweak is applied to the negation of the secret key, and the result is adjusted based on
   /// the parity of the corresponding public key.
-  static List<int> calculatePrivateTweek(
+  static List<int> calculatePrivateTweak(
       List<int> secret, List<int> tapTweakHash) {
     if (tapTweakHash.length != 32) {
       throw const CryptoSignException(
@@ -200,7 +200,7 @@ class BitcoinSigner {
       final t = P2TRUtils.calculateTweek(verifyKey.verifyKey.publicKey.point,
           script: tapScripts);
 
-      byteKey = BitcoinSignerUtils.calculatePrivateTweek(
+      byteKey = BitcoinSignerUtils.calculatePrivateTweak(
           signingKey.privateKey.toBytes(), t);
     } else {
       byteKey = signingKey.privateKey.toBytes();
@@ -280,7 +280,7 @@ class BitcoinSigner {
     }
     List<int> byteKey = <int>[];
     if (tweak != null) {
-      byteKey = BitcoinSignerUtils.calculatePrivateTweek(
+      byteKey = BitcoinSignerUtils.calculatePrivateTweak(
           signingKey.privateKey.toBytes(), tweak);
     } else {
       byteKey = signingKey.privateKey.toBytes();
