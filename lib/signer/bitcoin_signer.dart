@@ -133,34 +133,11 @@ class BitcoinSigner {
       lengthR = signature[3];
     }
 
-    int derPrefix = signature[0];
-    int lengthTotal = signature[1];
-    int derTypeInt = signature[2];
-    List<int> R = signature.sublist(4, 4 + lengthR);
-    int lengthS = signature[5 + lengthR];
-    List<int> S = signature.sublist(5 + lengthR + 1);
-    BigInt sAsBigint = BigintUtils.fromBytes(S);
-    List<int> newS;
-    if (lengthS == 33) {
-      final newSAsBigint = BitcoinSignerUtils._order - sAsBigint;
-      newS =
-          BigintUtils.toBytes(newSAsBigint, length: BitcoinSignerUtils.baselen);
-      lengthS -= 1;
-      lengthTotal -= 1;
-    } else {
-      newS = S;
+    final n = BitcoinSignerUtils._order >> 1;
+    if (ecdsaSign.s.compareTo(n) > 0) {
+      signature = BigintUtils.toDer(
+          [ecdsaSign.r, BitcoinSignerUtils._order - ecdsaSign.s]);
     }
-
-    signature = List<int>.from([
-      derPrefix,
-      lengthTotal,
-      derTypeInt,
-      lengthR,
-      ...R,
-      derTypeInt,
-      lengthS,
-      ...newS,
-    ]);
 
     final verify = verifyKey.verifyTransaction(digest, signature);
     if (!verify) {
